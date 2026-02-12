@@ -177,16 +177,6 @@ function pruneExcessRequests(reqs: PairingRequest[], maxPending: number) {
   return { requests: sorted.slice(-maxPending), removed: true };
 }
 
-function randomCode(): string {
-  // Human-friendly: 8 chars, upper, no ambiguous chars (0O1I).
-  let out = "";
-  for (let i = 0; i < PAIRING_CODE_LENGTH; i++) {
-    const idx = crypto.randomInt(0, PAIRING_CODE_ALPHABET.length);
-    out += PAIRING_CODE_ALPHABET[idx];
-  }
-  return out;
-}
-
 function normalizeId(value: string | number): string {
   return String(value).trim();
 }

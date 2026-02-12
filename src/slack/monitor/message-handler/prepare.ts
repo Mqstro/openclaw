@@ -174,7 +174,7 @@ export async function prepareSlackMessage(params: {
           }
         } else {
           logVerbose(
-            `Blocked unauthorized slack sender ${message.user} (dmPolicy=${ctx.dmPolicy}, ${allowMatchMeta})`,
+            `Blocked unauthorized slack sender ${message.user} (dmPolicy=${String(ctx.dmPolicy)}, ${allowMatchMeta})`,
           );
         }
         return null;

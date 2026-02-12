@@ -187,16 +187,6 @@ function randomCode(): string {
   return out;
 }
 
-function generateUniqueCode(existing: Set<string>): string {
-  for (let attempt = 0; attempt < 500; attempt += 1) {
-    const code = randomCode();
-    if (!existing.has(code)) {
-      return code;
-    }
-  }
-  throw new Error("failed to generate unique pairing code");
-}
-
 function normalizeId(value: string | number): string {
   return String(value).trim();
 }
@@ -340,7 +330,7 @@ export async function listChannelPairingRequests(
   );
 }
 
-export async function upsertChannelPairingRequest(params: {
+export async function upsertChannelPairingRequest(_params: {
   channel: PairingChannel;
   id: string | number;
   meta?: Record<string, string | undefined | null>;
@@ -353,7 +343,7 @@ export async function upsertChannelPairingRequest(params: {
   return { code: "", created: false };
 }
 
-export async function approveChannelPairingCode(params: {
+export async function approveChannelPairingCode(_params: {
   channel: PairingChannel;
   code: string;
   env?: NodeJS.ProcessEnv;

@@ -247,7 +247,7 @@ export function registerSlackMonitorSlashCommands(params: {
               }
             } else {
               logVerbose(
-                `slack: blocked slash sender ${command.user_id} (dmPolicy=${ctx.dmPolicy}, ${allowMatchMeta})`,
+                `slack: blocked slash sender ${command.user_id} (dmPolicy=${String(ctx.dmPolicy)}, ${allowMatchMeta})`,
               );
               await respond({
                 text: "You are not authorized to use this command.",

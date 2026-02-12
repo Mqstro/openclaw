@@ -5,30 +5,13 @@ import { applyTemplate } from "../auto-reply/templating.js";
 import { logVerbose, shouldLogVerbose } from "../globals.js";
 import { CLI_OUTPUT_MAX_BUFFER } from "../media-understanding/defaults.js";
 import { resolveTimeoutMs } from "../media-understanding/resolve.js";
-import {
-  normalizeMediaUnderstandingChatType,
-  resolveMediaUnderstandingScope,
-} from "../media-understanding/scope.js";
 import { runExec } from "../process/exec.js";
 import { DEFAULT_LINK_TIMEOUT_SECONDS } from "./defaults.js";
-import { extractLinksFromMessage } from "./detect.js";
 
 export type LinkUnderstandingResult = {
   urls: string[];
   outputs: string[];
 };
-
-function resolveScopeDecision(params: {
-  config?: LinkToolsConfig;
-  ctx: MsgContext;
-}): "allow" | "deny" {
-  return resolveMediaUnderstandingScope({
-    scope: params.config?.scope,
-    sessionKey: params.ctx.SessionKey,
-    channel: params.ctx.Surface ?? params.ctx.Provider,
-    chatType: normalizeMediaUnderstandingChatType(params.ctx.ChatType),
-  });
-}
 
 function resolveTimeoutMsFromConfig(params: {
   config?: LinkToolsConfig;
@@ -71,37 +54,6 @@ async function runCliEntry(params: {
   });
   const trimmed = stdout.trim();
   return trimmed || null;
-}
-
-async function runLinkEntries(params: {
-  entries: LinkModelConfig[];
-  ctx: MsgContext;
-  url: string;
-  config?: LinkToolsConfig;
-}): Promise<string | null> {
-  let lastError: unknown;
-  for (const entry of params.entries) {
-    try {
-      const output = await runCliEntry({
-        entry,
-        ctx: params.ctx,
-        url: params.url,
-        config: params.config,
-      });
-      if (output) {
-        return output;
-      }
-    } catch (err) {
-      lastError = err;
-      if (shouldLogVerbose()) {
-        logVerbose(`Link understanding failed for ${params.url}: ${String(err)}`);
-      }
-    }
-  }
-  if (lastError && shouldLogVerbose()) {
-    logVerbose(`Link understanding exhausted for ${params.url}`);
-  }
-  return null;
 }
 
 export async function runLinkUnderstanding(_params: {

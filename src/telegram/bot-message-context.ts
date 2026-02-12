@@ -310,7 +310,7 @@ export const buildTelegramMessageContext = async ({
           }
         } else {
           logVerbose(
-            `Blocked unauthorized telegram sender ${candidate} (dmPolicy=${dmPolicy}, ${allowMatchMeta})`,
+            `Blocked unauthorized telegram sender ${candidate} (dmPolicy=${String(dmPolicy)}, ${allowMatchMeta})`,
           );
         }
         return null;

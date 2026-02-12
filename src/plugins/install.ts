@@ -453,7 +453,7 @@ export async function installPluginFromFile(params: {
   };
 }
 
-export async function installPluginFromNpmSpec(params: {
+export async function installPluginFromNpmSpec(_params: {
   spec: string;
   extensionsDir?: string;
   timeoutMs?: number;

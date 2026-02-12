@@ -470,7 +470,7 @@ export function createSignalEventHandler(deps: SignalEventHandlerDeps) {
             }
           }
         } else {
-          logVerbose(`Blocked signal sender ${senderDisplay} (dmPolicy=${deps.dmPolicy})`);
+          logVerbose(`Blocked signal sender ${senderDisplay} (dmPolicy=${String(deps.dmPolicy)})`);
         }
         return;
       }

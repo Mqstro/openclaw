@@ -27,7 +27,7 @@ export type SkillsCheckOptions = {
   json?: boolean;
 };
 
-function appendClawHubHint(output: string, json?: boolean): string {
+function appendClawHubHint(output: string, _json?: boolean): string {
   // SECURITY HARDENING: ClawHub remote skill loading is disabled.
   return output;
 }

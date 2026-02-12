@@ -1,10 +1,7 @@
 import type { Command } from "commander";
 import type { NodesRpcOpts } from "./types.js";
-import { formatTimeAgo } from "../../infra/format-time/format-relative.ts";
 import { defaultRuntime } from "../../runtime.js";
-import { renderTable } from "../../terminal/table.js";
 import { getNodesTheme, runNodesCommand } from "./cli-utils.js";
-import { parsePairingList } from "./format.js";
 import { callGatewayCli, nodesCallOpts, resolveNodeId } from "./rpc.js";
 
 export function registerNodesPairingCommands(nodes: Command) {

@@ -374,7 +374,7 @@ export async function monitorIMessageProvider(opts: MonitorIMessageOpts = {}): P
             }
           }
         } else {
-          logVerbose(`Blocked iMessage sender ${sender} (dmPolicy=${dmPolicy})`);
+          logVerbose(`Blocked iMessage sender ${sender} (dmPolicy=${String(dmPolicy)})`);
         }
         return;
       }

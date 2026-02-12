@@ -9,11 +9,6 @@ import {
   ensureCompletionCacheExists,
 } from "../commands/doctor-completion.js";
 import { doctorCommand } from "../commands/doctor.js";
-import {
-  formatUpdateAvailableHint,
-  formatUpdateOneLiner,
-  resolveUpdateAvailability,
-} from "../commands/status.update.js";
 import { readConfigFileSnapshot, writeConfigFile } from "../config/config.js";
 import { resolveStateDir } from "../config/paths.js";
 import { formatDurationPrecise } from "../infra/format-time/format-duration.ts";
@@ -54,7 +49,6 @@ import { runCommandWithTimeout } from "../process/exec.js";
 import { defaultRuntime } from "../runtime.js";
 import { formatDocsLink } from "../terminal/links.js";
 import { stylePromptHint, stylePromptMessage } from "../terminal/prompt-style.js";
-import { renderTable } from "../terminal/table.js";
 import { theme } from "../terminal/theme.js";
 import { pathExists } from "../utils.js";
 import { replaceCliName, resolveCliName } from "./cli-name.js";
@@ -418,22 +412,6 @@ async function resolveGlobalManager(params: {
   }
   const byPresence = await detectGlobalInstallManagerByPresence(runCommand, params.timeoutMs);
   return byPresence ?? "npm";
-}
-
-function formatGitStatusLine(params: {
-  branch: string | null;
-  tag: string | null;
-  sha: string | null;
-}): string {
-  const shortSha = params.sha ? params.sha.slice(0, 8) : null;
-  const branch = params.branch && params.branch !== "HEAD" ? params.branch : null;
-  const tag = params.tag;
-  const parts = [
-    branch ?? (tag ? "detached" : "git"),
-    tag ? `tag ${tag}` : null,
-    shortSha ? `@ ${shortSha}` : null,
-  ].filter(Boolean);
-  return parts.join(" · ");
 }
 
 export async function updateStatusCommand(opts: UpdateStatusOptions): Promise<void> {

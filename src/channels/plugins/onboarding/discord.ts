@@ -1,6 +1,6 @@
 import type { OpenClawConfig } from "../../../config/config.js";
 import type { DiscordGuildEntry } from "../../../config/types.discord.js";
-import type { DmPolicy } from "../../../config/types.js";
+import type { DmPolicy, GroupPolicy } from "../../../config/types.js";
 import type { WizardPrompter } from "../../../wizard/prompts.js";
 import type { ChannelOnboardingAdapter, ChannelOnboardingDmPolicy } from "../onboarding-types.js";
 import {
@@ -17,13 +17,11 @@ import { resolveDiscordUserAllowlist } from "../../../discord/resolve-users.js";
 import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "../../../routing/session-key.js";
 import { formatDocsLink } from "../../../terminal/links.js";
 import { promptChannelAccessConfig } from "./channel-access.js";
-import { addWildcardAllowFrom, promptAccountId } from "./helpers.js";
+import { promptAccountId } from "./helpers.js";
 
 const channel = "discord" as const;
 
 function setDiscordDmPolicy(cfg: OpenClawConfig, dmPolicy: DmPolicy) {
-  const allowFrom =
-    dmPolicy === "open" ? addWildcardAllowFrom(cfg.channels?.discord?.dm?.allowFrom) : undefined;
   return {
     ...cfg,
     channels: {
@@ -34,7 +32,6 @@ function setDiscordDmPolicy(cfg: OpenClawConfig, dmPolicy: DmPolicy) {
           ...cfg.channels?.discord?.dm,
           enabled: cfg.channels?.discord?.dm?.enabled ?? true,
           policy: dmPolicy,
-          ...(allowFrom ? { allowFrom } : {}),
         },
       },
     },
@@ -57,7 +54,7 @@ async function noteDiscordTokenHelp(prompter: WizardPrompter): Promise<void> {
 function setDiscordGroupPolicy(
   cfg: OpenClawConfig,
   accountId: string,
-  groupPolicy: "open" | "allowlist" | "disabled",
+  groupPolicy: GroupPolicy,
 ): OpenClawConfig {
   if (accountId === DEFAULT_ACCOUNT_ID) {
     return {
@@ -265,7 +262,7 @@ const dmPolicy: ChannelOnboardingDmPolicy = {
   channel,
   policyKey: "channels.discord.dm.policy",
   allowFromKey: "channels.discord.dm.allowFrom",
-  getCurrent: (cfg) => cfg.channels?.discord?.dm?.policy ?? "pairing",
+  getCurrent: (cfg) => cfg.channels?.discord?.dm?.policy ?? "allowlist",
   setPolicy: (cfg, policy) => setDiscordDmPolicy(cfg, policy),
   promptAllowFrom: promptDiscordAllowFrom,
 };

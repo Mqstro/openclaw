@@ -10,13 +10,11 @@ import {
   resolveTelegramAccount,
 } from "../../../telegram/accounts.js";
 import { formatDocsLink } from "../../../terminal/links.js";
-import { addWildcardAllowFrom, promptAccountId } from "./helpers.js";
+import { promptAccountId } from "./helpers.js";
 
 const channel = "telegram" as const;
 
 function setTelegramDmPolicy(cfg: OpenClawConfig, dmPolicy: DmPolicy) {
-  const allowFrom =
-    dmPolicy === "open" ? addWildcardAllowFrom(cfg.channels?.telegram?.allowFrom) : undefined;
   return {
     ...cfg,
     channels: {
@@ -24,7 +22,6 @@ function setTelegramDmPolicy(cfg: OpenClawConfig, dmPolicy: DmPolicy) {
       telegram: {
         ...cfg.channels?.telegram,
         dmPolicy,
-        ...(allowFrom ? { allowFrom } : {}),
       },
     },
   };
@@ -196,7 +193,7 @@ const dmPolicy: ChannelOnboardingDmPolicy = {
   channel,
   policyKey: "channels.telegram.dmPolicy",
   allowFromKey: "channels.telegram.allowFrom",
-  getCurrent: (cfg) => cfg.channels?.telegram?.dmPolicy ?? "pairing",
+  getCurrent: (cfg) => cfg.channels?.telegram?.dmPolicy ?? "allowlist",
   setPolicy: (cfg, policy) => setTelegramDmPolicy(cfg, policy),
   promptAllowFrom: promptTelegramAllowFromForAccount,
 };

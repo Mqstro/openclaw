@@ -214,7 +214,7 @@ export function registerSlackMonitorSlashCommands(params: {
           });
           return;
         }
-        if (ctx.dmPolicy !== "open") {
+        {
           const sender = await ctx.resolveUserName(command.user_id);
           const senderName = sender?.name ?? undefined;
           const allowMatch = resolveSlackAllowListMatch({
@@ -224,7 +224,7 @@ export function registerSlackMonitorSlashCommands(params: {
           });
           const allowMatchMeta = formatAllowlistMatchMeta(allowMatch);
           if (!allowMatch.allowed) {
-            if (ctx.dmPolicy === "pairing") {
+            if (ctx.dmPolicy === "allowlist") {
               const { code, created } = await upsertChannelPairingRequest({
                 channel: "slack",
                 id: command.user_id,
@@ -284,11 +284,9 @@ export function registerSlackMonitorSlashCommands(params: {
             });
             return;
           }
-          // When groupPolicy is "open", only block channels that are EXPLICITLY denied
-          // (i.e., have a matching config entry with allow:false). Channels not in the
-          // config (matchSource undefined) should be allowed under open policy.
-          const hasExplicitConfig = Boolean(channelConfig?.matchSource);
-          if (!channelAllowed && (ctx.groupPolicy !== "open" || hasExplicitConfig)) {
+          // Block channels that are EXPLICITLY denied
+          // (i.e., have a matching config entry with allow:false).
+          if (!channelAllowed) {
             await respond({
               text: "This channel is not allowed.",
               response_type: "ephemeral",

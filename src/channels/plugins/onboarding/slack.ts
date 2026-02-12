@@ -1,5 +1,5 @@
 import type { OpenClawConfig } from "../../../config/config.js";
-import type { DmPolicy } from "../../../config/types.js";
+import type { DmPolicy, GroupPolicy } from "../../../config/types.js";
 import type { WizardPrompter } from "../../../wizard/prompts.js";
 import type { ChannelOnboardingAdapter, ChannelOnboardingDmPolicy } from "../onboarding-types.js";
 import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "../../../routing/session-key.js";
@@ -12,13 +12,11 @@ import { resolveSlackChannelAllowlist } from "../../../slack/resolve-channels.js
 import { resolveSlackUserAllowlist } from "../../../slack/resolve-users.js";
 import { formatDocsLink } from "../../../terminal/links.js";
 import { promptChannelAccessConfig } from "./channel-access.js";
-import { addWildcardAllowFrom, promptAccountId } from "./helpers.js";
+import { promptAccountId } from "./helpers.js";
 
 const channel = "slack" as const;
 
 function setSlackDmPolicy(cfg: OpenClawConfig, dmPolicy: DmPolicy) {
-  const allowFrom =
-    dmPolicy === "open" ? addWildcardAllowFrom(cfg.channels?.slack?.dm?.allowFrom) : undefined;
   return {
     ...cfg,
     channels: {
@@ -29,7 +27,6 @@ function setSlackDmPolicy(cfg: OpenClawConfig, dmPolicy: DmPolicy) {
           ...cfg.channels?.slack?.dm,
           enabled: cfg.channels?.slack?.dm?.enabled ?? true,
           policy: dmPolicy,
-          ...(allowFrom ? { allowFrom } : {}),
         },
       },
     },
@@ -127,7 +124,7 @@ async function noteSlackTokenHelp(prompter: WizardPrompter, botName: string): Pr
 function setSlackGroupPolicy(
   cfg: OpenClawConfig,
   accountId: string,
-  groupPolicy: "open" | "allowlist" | "disabled",
+  groupPolicy: GroupPolicy,
 ): OpenClawConfig {
   if (accountId === DEFAULT_ACCOUNT_ID) {
     return {
@@ -315,7 +312,7 @@ const dmPolicy: ChannelOnboardingDmPolicy = {
   channel,
   policyKey: "channels.slack.dm.policy",
   allowFromKey: "channels.slack.dm.allowFrom",
-  getCurrent: (cfg) => cfg.channels?.slack?.dm?.policy ?? "pairing",
+  getCurrent: (cfg) => cfg.channels?.slack?.dm?.policy ?? "allowlist",
   setPolicy: (cfg, policy) => setSlackDmPolicy(cfg, policy),
   promptAllowFrom: promptSlackAllowFrom,
 };

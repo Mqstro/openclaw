@@ -11,13 +11,11 @@ import {
 import { normalizeIMessageHandle } from "../../../imessage/targets.js";
 import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "../../../routing/session-key.js";
 import { formatDocsLink } from "../../../terminal/links.js";
-import { addWildcardAllowFrom, promptAccountId } from "./helpers.js";
+import { promptAccountId } from "./helpers.js";
 
 const channel = "imessage" as const;
 
 function setIMessageDmPolicy(cfg: OpenClawConfig, dmPolicy: DmPolicy) {
-  const allowFrom =
-    dmPolicy === "open" ? addWildcardAllowFrom(cfg.channels?.imessage?.allowFrom) : undefined;
   return {
     ...cfg,
     channels: {
@@ -25,7 +23,6 @@ function setIMessageDmPolicy(cfg: OpenClawConfig, dmPolicy: DmPolicy) {
       imessage: {
         ...cfg.channels?.imessage,
         dmPolicy,
-        ...(allowFrom ? { allowFrom } : {}),
       },
     },
   };
@@ -147,7 +144,7 @@ const dmPolicy: ChannelOnboardingDmPolicy = {
   channel,
   policyKey: "channels.imessage.dmPolicy",
   allowFromKey: "channels.imessage.allowFrom",
-  getCurrent: (cfg) => cfg.channels?.imessage?.dmPolicy ?? "pairing",
+  getCurrent: (cfg) => cfg.channels?.imessage?.dmPolicy ?? "allowlist",
   setPolicy: (cfg, policy) => setIMessageDmPolicy(cfg, policy),
   promptAllowFrom: promptIMessageAllowFrom,
 };

@@ -22,14 +22,9 @@ import { logVerbose, shouldLogVerbose } from "../../globals.js";
 import { recordChannelActivity } from "../../infra/channel-activity.js";
 import { enqueueSystemEvent } from "../../infra/system-events.js";
 import { getChildLogger } from "../../logging.js";
-import { buildPairingReply } from "../../pairing/pairing-messages.js";
-import {
-  readChannelAllowFromStore,
-  upsertChannelPairingRequest,
-} from "../../pairing/pairing-store.js";
+import { readChannelAllowFromStore } from "../../pairing/pairing-store.js";
 import { resolveAgentRoute } from "../../routing/resolve-route.js";
 import { fetchPluralKitMessageInfo } from "../pluralkit.js";
-import { sendMessageDiscord } from "../send.js";
 import {
   allowListMatches,
   isDiscordGroupAllowedByPolicy,
@@ -42,11 +37,7 @@ import {
   resolveDiscordUserAllowed,
   resolveGroupDmAllow,
 } from "./allow-list.js";
-import {
-  formatDiscordUserTag,
-  resolveDiscordSystemLocation,
-  resolveTimestampMs,
-} from "./format.js";
+import { resolveDiscordSystemLocation, resolveTimestampMs } from "./format.js";
 import { resolveDiscordChannelInfo, resolveDiscordMessageText } from "./message-utils.js";
 import { resolveDiscordSenderIdentity, resolveDiscordWebhookId } from "./sender-identity.js";
 import { resolveDiscordSystemEvent } from "./system-events.js";
@@ -114,14 +105,14 @@ export async function preflightDiscordMessage(
     return null;
   }
 
-  const dmPolicy = params.discordConfig?.dm?.policy ?? "pairing";
+  const dmPolicy = params.discordConfig?.dm?.policy ?? "allowlist";
   let commandAuthorized = true;
   if (isDirectMessage) {
     if (dmPolicy === "disabled") {
       logVerbose("discord: drop dm (dmPolicy: disabled)");
       return null;
     }
-    if (dmPolicy !== "open") {
+    {
       const storeAllowFrom = await readChannelAllowFromStore("discord").catch(() => []);
       const effectiveAllowFrom = [...(params.allowFrom ?? []), ...storeAllowFrom];
       const allowList = normalizeDiscordAllowList(effectiveAllowFrom, ["discord:", "user:", "pk:"]);
@@ -139,42 +130,9 @@ export async function preflightDiscordMessage(
       const permitted = allowMatch.allowed;
       if (!permitted) {
         commandAuthorized = false;
-        if (dmPolicy === "pairing") {
-          const { code, created } = await upsertChannelPairingRequest({
-            channel: "discord",
-            id: author.id,
-            meta: {
-              tag: formatDiscordUserTag(author),
-              name: author.username ?? undefined,
-            },
-          });
-          if (created) {
-            logVerbose(
-              `discord pairing request sender=${author.id} tag=${formatDiscordUserTag(author)} (${allowMatchMeta})`,
-            );
-            try {
-              await sendMessageDiscord(
-                `user:${author.id}`,
-                buildPairingReply({
-                  channel: "discord",
-                  idLine: `Your Discord user id: ${author.id}`,
-                  code,
-                }),
-                {
-                  token: params.token,
-                  rest: params.client.rest,
-                  accountId: params.accountId,
-                },
-              );
-            } catch (err) {
-              logVerbose(`discord pairing reply failed for ${author.id}: ${String(err)}`);
-            }
-          }
-        } else {
-          logVerbose(
-            `Blocked unauthorized discord sender ${sender.id} (dmPolicy=${dmPolicy}, ${allowMatchMeta})`,
-          );
-        }
+        logVerbose(
+          `Blocked unauthorized discord sender ${sender.id} (dmPolicy=${dmPolicy}, ${allowMatchMeta})`,
+        );
         return null;
       }
       commandAuthorized = true;

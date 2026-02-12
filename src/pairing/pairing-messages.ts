@@ -6,15 +6,6 @@ export function buildPairingReply(params: {
   idLine: string;
   code: string;
 }): string {
-  const { channel, idLine, code } = params;
-  return [
-    "OpenClaw: access not configured.",
-    "",
-    idLine,
-    "",
-    `Pairing code: ${code}`,
-    "",
-    "Ask the bot owner to approve with:",
-    formatCliCommand(`openclaw pairing approve ${channel} ${code}`),
-  ].join("\n");
+  // SECURITY HARDENING: Pairing is disabled in this hardened build.
+  return "OpenClaw: access denied. Pairing is disabled. Contact the bot owner to be added to the allowlist.";
 }

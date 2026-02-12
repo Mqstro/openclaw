@@ -88,22 +88,22 @@ export async function monitorSlackProvider(opts: MonitorSlackOpts = {}) {
   const dmConfig = slackCfg.dm;
 
   const dmEnabled = dmConfig?.enabled ?? true;
-  const dmPolicy = dmConfig?.policy ?? "pairing";
+  const dmPolicy = dmConfig?.policy ?? "allowlist";
   let allowFrom = dmConfig?.allowFrom;
   const groupDmEnabled = dmConfig?.groupEnabled ?? false;
   const groupDmChannels = dmConfig?.groupChannels;
   let channelsConfig = slackCfg.channels;
   const defaultGroupPolicy = cfg.channels?.defaults?.groupPolicy;
-  const groupPolicy = slackCfg.groupPolicy ?? defaultGroupPolicy ?? "open";
+  const groupPolicy = slackCfg.groupPolicy ?? defaultGroupPolicy ?? "allowlist";
   if (
     slackCfg.groupPolicy === undefined &&
     slackCfg.channels === undefined &&
     defaultGroupPolicy === undefined &&
-    groupPolicy === "open"
+    groupPolicy === "allowlist"
   ) {
     runtime.log?.(
       warn(
-        'slack: groupPolicy defaults to "open" when channels.slack is missing; set channels.slack.groupPolicy (or channels.defaults.groupPolicy) or add channels.slack.channels to restrict access.',
+        'slack: groupPolicy defaults to "allowlist" when channels.slack is missing; set channels.slack.groupPolicy (or channels.defaults.groupPolicy) or add channels.slack.channels to restrict access.',
       ),
     );
   }

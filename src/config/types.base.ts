@@ -5,8 +5,8 @@ export type TypingMode = "never" | "instant" | "thinking" | "message";
 export type SessionScope = "per-sender" | "global";
 export type DmScope = "main" | "per-peer" | "per-channel-peer" | "per-account-channel-peer";
 export type ReplyToMode = "off" | "first" | "all";
-export type GroupPolicy = "open" | "disabled" | "allowlist";
-export type DmPolicy = "pairing" | "allowlist" | "open" | "disabled";
+export type GroupPolicy = "allowlist" | "disabled";
+export type DmPolicy = "allowlist" | "disabled";
 
 export type OutboundRetryConfig = {
   /** Max retry attempts for outbound requests (default: 3). */

@@ -631,6 +631,10 @@ export function createWebFetchTool(options?: {
   config?: OpenClawConfig;
   sandboxed?: boolean;
 }): AnyAgentTool | null {
+  // --- HARDENED BUILD: Web fetch disabled ---
+  return null;
+  // --- END HARDENED BUILD ---
+
   const fetch = resolveFetchConfig(options?.config);
   if (!resolveFetchEnabled({ fetch, sandboxed: options?.sandboxed })) {
     return null;
@@ -646,9 +650,15 @@ export function createWebFetchTool(options?: {
     firecrawl?.timeoutSeconds ?? fetch?.timeoutSeconds,
     DEFAULT_TIMEOUT_SECONDS,
   );
-  const userAgent =
-    (fetch && "userAgent" in fetch && typeof fetch.userAgent === "string" && fetch.userAgent) ||
-    DEFAULT_FETCH_USER_AGENT;
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- unreachable after hardened return null
+  const fetchObj = fetch!;
+  const rawUserAgent =
+    fetchObj &&
+    "userAgent" in fetchObj &&
+    typeof (fetchObj as Record<string, unknown>).userAgent === "string"
+      ? String((fetchObj as Record<string, unknown>).userAgent)
+      : "";
+  const userAgent: string = rawUserAgent || DEFAULT_FETCH_USER_AGENT;
   return {
     label: "Web Fetch",
     name: "web_fetch",

@@ -434,15 +434,14 @@ export function createSignalEventHandler(deps: SignalEventHandlerDeps) {
     const storeAllowFrom = await readChannelAllowFromStore("signal").catch(() => []);
     const effectiveDmAllow = [...deps.allowFrom, ...storeAllowFrom];
     const effectiveGroupAllow = [...deps.groupAllowFrom, ...storeAllowFrom];
-    const dmAllowed =
-      deps.dmPolicy === "open" ? true : isSignalSenderAllowed(sender, effectiveDmAllow);
+    const dmAllowed = isSignalSenderAllowed(sender, effectiveDmAllow);
 
     if (!isGroup) {
       if (deps.dmPolicy === "disabled") {
         return;
       }
       if (!dmAllowed) {
-        if (deps.dmPolicy === "pairing") {
+        if (deps.dmPolicy === "allowlist") {
           const senderId = senderAllowId;
           const { code, created } = await upsertChannelPairingRequest({
             channel: "signal",

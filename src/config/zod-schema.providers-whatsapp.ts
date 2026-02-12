@@ -23,7 +23,7 @@ export const WhatsAppAccountSchema = z
     responsePrefix: z.string().optional(),
     /** Override auth directory for this WhatsApp account (Baileys multi-file auth state). */
     authDir: z.string().optional(),
-    dmPolicy: DmPolicySchema.optional().default("pairing"),
+    dmPolicy: DmPolicySchema.optional().default("allowlist"),
     selfChatMode: z.boolean().optional(),
     allowFrom: z.array(z.string()).optional(),
     groupAllowFrom: z.array(z.string()).optional(),
@@ -60,21 +60,7 @@ export const WhatsAppAccountSchema = z
     debounceMs: z.number().int().nonnegative().optional().default(0),
     heartbeat: ChannelHeartbeatVisibilitySchema,
   })
-  .strict()
-  .superRefine((value, ctx) => {
-    if (value.dmPolicy !== "open") {
-      return;
-    }
-    const allow = (value.allowFrom ?? []).map((v) => String(v).trim()).filter(Boolean);
-    if (allow.includes("*")) {
-      return;
-    }
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ["allowFrom"],
-      message: 'channels.whatsapp.accounts.*.dmPolicy="open" requires allowFrom to include "*"',
-    });
-  });
+  .strict();
 
 export const WhatsAppConfigSchema = z
   .object({
@@ -83,7 +69,7 @@ export const WhatsAppConfigSchema = z
     markdown: MarkdownConfigSchema,
     configWrites: z.boolean().optional(),
     sendReadReceipts: z.boolean().optional(),
-    dmPolicy: DmPolicySchema.optional().default("pairing"),
+    dmPolicy: DmPolicySchema.optional().default("allowlist"),
     messagePrefix: z.string().optional(),
     responsePrefix: z.string().optional(),
     selfChatMode: z.boolean().optional(),
@@ -130,19 +116,4 @@ export const WhatsAppConfigSchema = z
     debounceMs: z.number().int().nonnegative().optional().default(0),
     heartbeat: ChannelHeartbeatVisibilitySchema,
   })
-  .strict()
-  .superRefine((value, ctx) => {
-    if (value.dmPolicy !== "open") {
-      return;
-    }
-    const allow = (value.allowFrom ?? []).map((v) => String(v).trim()).filter(Boolean);
-    if (allow.includes("*")) {
-      return;
-    }
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ["allowFrom"],
-      message:
-        'channels.whatsapp.dmPolicy="open" requires channels.whatsapp.allowFrom to include "*"',
-    });
-  });
+  .strict();

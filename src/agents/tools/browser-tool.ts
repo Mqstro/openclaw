@@ -221,6 +221,18 @@ export function createBrowserTool(opts?: {
   sandboxBridgeUrl?: string;
   allowHostControl?: boolean;
 }): AnyAgentTool {
+  // --- HARDENED BUILD: Browser tool disabled ---
+  return {
+    label: "Browser",
+    name: "browser",
+    description: "Browser tool is disabled in this hardened build.",
+    parameters: BrowserToolSchema,
+    execute: async (_toolCallId: string, _params: unknown) => {
+      return jsonResult({ error: "Browser tool is disabled in this hardened build." });
+    },
+  };
+  // --- END HARDENED BUILD ---
+
   const targetDefault = opts?.sandboxBridgeUrl ? "sandbox" : "host";
   const hostHint =
     opts?.allowHostControl === false ? "Host target blocked by policy." : "Host target allowed.";

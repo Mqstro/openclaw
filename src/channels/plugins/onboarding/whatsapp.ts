@@ -43,7 +43,7 @@ async function promptWhatsAppAllowFrom(
   prompter: WizardPrompter,
   options?: { forceAllowlist?: boolean },
 ): Promise<OpenClawConfig> {
-  const existingPolicy = cfg.channels?.whatsapp?.dmPolicy ?? "pairing";
+  const existingPolicy = cfg.channels?.whatsapp?.dmPolicy ?? "allowlist";
   const existingAllowFrom = cfg.channels?.whatsapp?.allowFrom ?? [];
   const existingLabel = existingAllowFrom.length > 0 ? existingAllowFrom.join(", ") : "unset";
 
@@ -90,9 +90,7 @@ async function promptWhatsAppAllowFrom(
   await prompter.note(
     [
       "WhatsApp direct chats are gated by `channels.whatsapp.dmPolicy` + `channels.whatsapp.allowFrom`.",
-      "- pairing (default): unknown senders get a pairing code; owner approves",
-      "- allowlist: unknown senders are blocked",
-      '- open: public inbound DMs (requires allowFrom to include "*")',
+      "- allowlist (default): unknown senders are blocked",
       "- disabled: ignore WhatsApp DMs",
       "",
       `Current: dmPolicy=${existingPolicy}, allowFrom=${existingLabel}`,
@@ -145,7 +143,7 @@ async function promptWhatsAppAllowFrom(
     await prompter.note(
       [
         "Personal phone mode enabled.",
-        "- dmPolicy set to allowlist (pairing skipped)",
+        "- dmPolicy set to allowlist",
         `- allowFrom includes ${normalized}`,
       ].join("\n"),
       "WhatsApp personal phone",
@@ -156,18 +154,13 @@ async function promptWhatsAppAllowFrom(
   const policy = (await prompter.select({
     message: "WhatsApp DM policy",
     options: [
-      { value: "pairing", label: "Pairing (recommended)" },
-      { value: "allowlist", label: "Allowlist only (block unknown senders)" },
-      { value: "open", label: "Open (public inbound DMs)" },
+      { value: "allowlist", label: "Allowlist (recommended, block unknown senders)" },
       { value: "disabled", label: "Disabled (ignore WhatsApp DMs)" },
     ],
   })) as DmPolicy;
 
   let next = setWhatsAppSelfChatMode(cfg, false);
   next = setWhatsAppDmPolicy(next, policy);
-  if (policy === "open") {
-    next = setWhatsAppAllowFrom(next, ["*"]);
-  }
   if (policy === "disabled") {
     return next;
   }
@@ -178,7 +171,7 @@ async function promptWhatsAppAllowFrom(
           { value: "keep", label: "Keep current allowFrom" },
           {
             value: "unset",
-            label: "Unset allowFrom (use pairing approvals only)",
+            label: "Unset allowFrom",
           },
           { value: "list", label: "Set allowFrom to specific numbers" },
         ] as const)

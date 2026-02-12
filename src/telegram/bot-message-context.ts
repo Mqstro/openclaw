@@ -238,13 +238,13 @@ export const buildTelegramMessageContext = async ({
     }
   };
 
-  // DM access control (secure defaults): "pairing" (default) / "allowlist" / "open" / "disabled"
+  // DM access control (secure defaults): "allowlist" (default) / "disabled"
   if (!isGroup) {
     if (dmPolicy === "disabled") {
       return null;
     }
 
-    if (dmPolicy !== "open") {
+    {
       const senderUsername = msg.from?.username ?? "";
       const senderUserId = msg.from?.id != null ? String(msg.from.id) : null;
       const candidate = senderUserId ?? String(chatId);
@@ -259,7 +259,7 @@ export const buildTelegramMessageContext = async ({
       const allowed =
         effectiveDmAllow.hasWildcard || (effectiveDmAllow.hasEntries && allowMatch.allowed);
       if (!allowed) {
-        if (dmPolicy === "pairing") {
+        if (dmPolicy === "allowlist") {
           try {
             const from = msg.from as
               | {

@@ -96,7 +96,7 @@ export const TelegramAccountSchemaBase = z
     commands: ProviderCommandsSchema,
     customCommands: z.array(TelegramCustomCommandSchema).optional(),
     configWrites: z.boolean().optional(),
-    dmPolicy: DmPolicySchema.optional().default("pairing"),
+    dmPolicy: DmPolicySchema.optional().default("allowlist"),
     botToken: z.string().optional(),
     tokenFile: z.string().optional(),
     replyToMode: ReplyToModeSchema.optional(),
@@ -209,7 +209,7 @@ export const TelegramConfigSchema = TelegramAccountSchemaBase.extend({
 export const DiscordDmSchema = z
   .object({
     enabled: z.boolean().optional(),
-    policy: DmPolicySchema.optional().default("pairing"),
+    policy: DmPolicySchema.optional().default("allowlist"),
     allowFrom: z.array(z.union([z.string(), z.number()])).optional(),
     groupEnabled: z.boolean().optional(),
     groupChannels: z.array(z.union([z.string(), z.number()])).optional(),
@@ -337,7 +337,7 @@ export const DiscordConfigSchema = DiscordAccountSchema.extend({
 export const GoogleChatDmSchema = z
   .object({
     enabled: z.boolean().optional(),
-    policy: DmPolicySchema.optional().default("pairing"),
+    policy: DmPolicySchema.optional().default("allowlist"),
     allowFrom: z.array(z.union([z.string(), z.number()])).optional(),
   })
   .strict()
@@ -409,7 +409,7 @@ export const GoogleChatConfigSchema = GoogleChatAccountSchema.extend({
 export const SlackDmSchema = z
   .object({
     enabled: z.boolean().optional(),
-    policy: DmPolicySchema.optional().default("pairing"),
+    policy: DmPolicySchema.optional().default("allowlist"),
     allowFrom: z.array(z.union([z.string(), z.number()])).optional(),
     groupEnabled: z.boolean().optional(),
     groupChannels: z.array(z.union([z.string(), z.number()])).optional(),
@@ -574,7 +574,7 @@ export const SignalAccountSchemaBase = z
     ignoreAttachments: z.boolean().optional(),
     ignoreStories: z.boolean().optional(),
     sendReadReceipts: z.boolean().optional(),
-    dmPolicy: DmPolicySchema.optional().default("pairing"),
+    dmPolicy: DmPolicySchema.optional().default("allowlist"),
     allowFrom: z.array(z.union([z.string(), z.number()])).optional(),
     groupAllowFrom: z.array(z.union([z.string(), z.number()])).optional(),
     groupPolicy: GroupPolicySchema.optional().default("allowlist"),
@@ -662,7 +662,7 @@ export const IrcAccountSchemaBase = z
     passwordFile: z.string().optional(),
     nickserv: IrcNickServSchema.optional(),
     channels: z.array(z.string()).optional(),
-    dmPolicy: DmPolicySchema.optional().default("pairing"),
+    dmPolicy: DmPolicySchema.optional().default("allowlist"),
     allowFrom: z.array(z.union([z.string(), z.number()])).optional(),
     groupAllowFrom: z.array(z.union([z.string(), z.number()])).optional(),
     groupPolicy: GroupPolicySchema.optional().default("allowlist"),
@@ -729,7 +729,7 @@ export const IMessageAccountSchemaBase = z
     remoteHost: z.string().optional(),
     service: z.union([z.literal("imessage"), z.literal("sms"), z.literal("auto")]).optional(),
     region: z.string().optional(),
-    dmPolicy: DmPolicySchema.optional().default("pairing"),
+    dmPolicy: DmPolicySchema.optional().default("allowlist"),
     allowFrom: z.array(z.union([z.string(), z.number()])).optional(),
     groupAllowFrom: z.array(z.union([z.string(), z.number()])).optional(),
     groupPolicy: GroupPolicySchema.optional().default("allowlist"),
@@ -821,7 +821,7 @@ export const BlueBubblesAccountSchemaBase = z
     serverUrl: z.string().optional(),
     password: z.string().optional(),
     webhookPath: z.string().optional(),
-    dmPolicy: DmPolicySchema.optional().default("pairing"),
+    dmPolicy: DmPolicySchema.optional().default("allowlist"),
     allowFrom: z.array(BlueBubblesAllowFromEntry).optional(),
     groupAllowFrom: z.array(BlueBubblesAllowFromEntry).optional(),
     groupPolicy: GroupPolicySchema.optional().default("allowlist"),
@@ -899,7 +899,7 @@ export const MSTeamsConfigSchema = z
       })
       .strict()
       .optional(),
-    dmPolicy: DmPolicySchema.optional().default("pairing"),
+    dmPolicy: DmPolicySchema.optional().default("allowlist"),
     allowFrom: z.array(z.string()).optional(),
     groupAllowFrom: z.array(z.string()).optional(),
     groupPolicy: GroupPolicySchema.optional().default("allowlist"),

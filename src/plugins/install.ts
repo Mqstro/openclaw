@@ -462,49 +462,13 @@ export async function installPluginFromNpmSpec(params: {
   dryRun?: boolean;
   expectedPluginId?: string;
 }): Promise<InstallPluginResult> {
-  const logger = params.logger ?? defaultLogger;
-  const timeoutMs = params.timeoutMs ?? 120_000;
-  const mode = params.mode ?? "install";
-  const dryRun = params.dryRun ?? false;
-  const expectedPluginId = params.expectedPluginId;
-  const spec = params.spec.trim();
-  if (!spec) {
-    return { ok: false, error: "missing npm spec" };
-  }
-
-  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-npm-pack-"));
-  logger.info?.(`Downloading ${spec}…`);
-  const res = await runCommandWithTimeout(["npm", "pack", spec], {
-    timeoutMs: Math.max(timeoutMs, 300_000),
-    cwd: tmpDir,
-    env: { COREPACK_ENABLE_DOWNLOAD_PROMPT: "0" },
-  });
-  if (res.code !== 0) {
-    return {
-      ok: false,
-      error: `npm pack failed: ${res.stderr.trim() || res.stdout.trim()}`,
-    };
-  }
-
-  const packed = (res.stdout || "")
-    .split("\n")
-    .map((l) => l.trim())
-    .filter(Boolean)
-    .pop();
-  if (!packed) {
-    return { ok: false, error: "npm pack produced no archive" };
-  }
-
-  const archivePath = path.join(tmpDir, packed);
-  return await installPluginFromArchive({
-    archivePath,
-    extensionsDir: params.extensionsDir,
-    timeoutMs,
-    logger,
-    mode,
-    dryRun,
-    expectedPluginId,
-  });
+  // SECURITY HARDENING: Remote plugin installation from npm is disabled.
+  // Only local file paths are allowed in this hardened build.
+  return {
+    ok: false,
+    error:
+      "Remote plugin installation from npm is disabled in this hardened build. Only local file paths are allowed.",
+  };
 }
 
 export async function installPluginFromPath(params: {

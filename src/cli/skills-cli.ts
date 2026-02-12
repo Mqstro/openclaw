@@ -28,10 +28,8 @@ export type SkillsCheckOptions = {
 };
 
 function appendClawHubHint(output: string, json?: boolean): string {
-  if (json) {
-    return output;
-  }
-  return `${output}\n\nTip: use \`npx clawhub\` to search, install, and sync skills.`;
+  // SECURITY HARDENING: ClawHub remote skill loading is disabled.
+  return output;
 }
 
 function formatSkillStatus(skill: SkillStatusEntry): string {

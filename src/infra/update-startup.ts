@@ -48,70 +48,9 @@ export async function runGatewayUpdateCheck(params: {
   isNixMode: boolean;
   allowInTests?: boolean;
 }): Promise<void> {
-  if (shouldSkipCheck(Boolean(params.allowInTests))) {
-    return;
-  }
-  if (params.isNixMode) {
-    return;
-  }
-  if (params.cfg.update?.checkOnStart === false) {
-    return;
-  }
-
-  const statePath = path.join(resolveStateDir(), UPDATE_CHECK_FILENAME);
-  const state = await readState(statePath);
-  const now = Date.now();
-  const lastCheckedAt = state.lastCheckedAt ? Date.parse(state.lastCheckedAt) : null;
-  if (lastCheckedAt && Number.isFinite(lastCheckedAt)) {
-    if (now - lastCheckedAt < UPDATE_CHECK_INTERVAL_MS) {
-      return;
-    }
-  }
-
-  const root = await resolveOpenClawPackageRoot({
-    moduleUrl: import.meta.url,
-    argv1: process.argv[1],
-    cwd: process.cwd(),
-  });
-  const status = await checkUpdateStatus({
-    root,
-    timeoutMs: 2500,
-    fetchGit: false,
-    includeRegistry: false,
-  });
-
-  const nextState: UpdateCheckState = {
-    ...state,
-    lastCheckedAt: new Date(now).toISOString(),
-  };
-
-  if (status.installKind !== "package") {
-    await writeState(statePath, nextState);
-    return;
-  }
-
-  const channel = normalizeUpdateChannel(params.cfg.update?.channel) ?? DEFAULT_PACKAGE_CHANNEL;
-  const resolved = await resolveNpmChannelTag({ channel, timeoutMs: 2500 });
-  const tag = resolved.tag;
-  if (!resolved.version) {
-    await writeState(statePath, nextState);
-    return;
-  }
-
-  const cmp = compareSemverStrings(VERSION, resolved.version);
-  if (cmp != null && cmp < 0) {
-    const shouldNotify =
-      state.lastNotifiedVersion !== resolved.version || state.lastNotifiedTag !== tag;
-    if (shouldNotify) {
-      params.log.info(
-        `update available (${tag}): v${resolved.version} (current v${VERSION}). Run: ${formatCliCommand("openclaw update")}`,
-      );
-      nextState.lastNotifiedVersion = resolved.version;
-      nextState.lastNotifiedTag = tag;
-    }
-  }
-
-  await writeState(statePath, nextState);
+  // SECURITY HARDENING: Auto-update check is disabled in this hardened build.
+  // No outbound network calls to check for new versions.
+  return;
 }
 
 export function scheduleGatewayUpdateCheck(params: {

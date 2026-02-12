@@ -49,6 +49,17 @@ const CanvasToolSchema = Type.Object({
 });
 
 export function createCanvasTool(): AnyAgentTool {
+  // --- HARDENED BUILD: Canvas tool disabled ---
+  return {
+    label: "Canvas",
+    name: "canvas",
+    description: "Canvas tool is disabled in this hardened build.",
+    parameters: CanvasToolSchema,
+    execute: async (_toolCallId: string, _params: unknown) => {
+      return jsonResult({ error: "Canvas tool is disabled in this hardened build." });
+    },
+  };
+  // --- END HARDENED BUILD ---
   return {
     label: "Canvas",
     name: "canvas",

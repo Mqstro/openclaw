@@ -1,0 +1,59 @@
+# OpenClaw Hardened Deployment for Raspberry Pi 5
+# Security-first configuration: no exposed ports, resource limits, non-root user
+#
+# Usage:
+#   cp .env.example .env  # then edit .env
+#   docker compose up -d
+
+services:
+  openclaw-gateway:
+    image: mqstro/openclaw:hardened
+    container_name: openclaw
+    restart: unless-stopped
+    init: true
+    user: "1000:1000"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    networks:
+      - openclaw-net
+    volumes:
+      - ${OPENCLAW_STATE_DIR:-/opt/openclaw/state}:/home/node/.openclaw
+      - ${OPENCLAW_WORKSPACE_DIR:-/opt/openclaw/workspace}:/home/node/.openclaw/workspace
+    environment:
+      - HOME=/home/node
+      - TERM=xterm-256color
+      - NODE_ENV=production
+      - OPENCLAW_GATEWAY_TOKEN=${GATEWAY_TOKEN}
+      - OPENCLAW_GATEWAY_BIND=loopback
+    # NO ports exposed — access only via Tailscale Serve
+    # This prevents any direct network access from outside Tailscale
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+          cpus: "2.0"
+        reservations:
+          memory: 512m
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:18789/health').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+networks:
+  openclaw-net:
+    driver: bridge

@@ -19,14 +19,11 @@ export async function noteSecurityWarnings(cfg: OpenClawConfig) {
   // that expose the gateway to network without proper auth
 
   const gatewayBind = (cfg.gateway?.bind ?? "loopback") as string;
-  const customBindHost = cfg.gateway?.customBindHost?.trim();
-  const bindModes: GatewayBindMode[] = ["auto", "lan", "loopback", "custom", "tailnet"];
+  const bindModes: GatewayBindMode[] = ["loopback", "tailnet"];
   const bindMode = bindModes.includes(gatewayBind as GatewayBindMode)
     ? (gatewayBind as GatewayBindMode)
     : undefined;
-  const resolvedBindHost = bindMode
-    ? await resolveGatewayBindHost(bindMode, customBindHost)
-    : "0.0.0.0";
+  const resolvedBindHost = bindMode ? await resolveGatewayBindHost(bindMode) : "127.0.0.1";
   const isExposed = !isLoopbackHost(resolvedBindHost);
 
   const resolvedAuth = resolveGatewayAuth({

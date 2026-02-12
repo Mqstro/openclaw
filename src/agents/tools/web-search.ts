@@ -662,6 +662,10 @@ export function createWebSearchTool(options?: {
   config?: OpenClawConfig;
   sandboxed?: boolean;
 }): AnyAgentTool | null {
+  // --- HARDENED BUILD: Web search disabled ---
+  return null;
+  // --- END HARDENED BUILD ---
+
   const search = resolveSearchConfig(options?.config);
   if (!resolveSearchEnabled({ search, sandboxed: options?.sandboxed })) {
     return null;

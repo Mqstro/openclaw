@@ -1,13 +1,11 @@
 import {
-  disableTailscaleFunnel,
   disableTailscaleServe,
-  enableTailscaleFunnel,
   enableTailscaleServe,
   getTailnetHostname,
 } from "../infra/tailscale.js";
 
 export async function startGatewayTailscaleExposure(params: {
-  tailscaleMode: "off" | "serve" | "funnel";
+  tailscaleMode: "off" | "serve";
   resetOnExit?: boolean;
   port: number;
   controlUiBasePath?: string;
@@ -17,25 +15,21 @@ export async function startGatewayTailscaleExposure(params: {
     return null;
   }
 
+  if (params.tailscaleMode !== "serve") {
+    throw new Error(`Unsupported tailscale mode: ${params.tailscaleMode as string}`);
+  }
+
   try {
-    if (params.tailscaleMode === "serve") {
-      await enableTailscaleServe(params.port);
-    } else {
-      await enableTailscaleFunnel(params.port);
-    }
+    await enableTailscaleServe(params.port);
     const host = await getTailnetHostname().catch(() => null);
     if (host) {
       const uiPath = params.controlUiBasePath ? `${params.controlUiBasePath}/` : "/";
-      params.logTailscale.info(
-        `${params.tailscaleMode} enabled: https://${host}${uiPath} (WS via wss://${host})`,
-      );
+      params.logTailscale.info(`serve enabled: https://${host}${uiPath} (WS via wss://${host})`);
     } else {
-      params.logTailscale.info(`${params.tailscaleMode} enabled`);
+      params.logTailscale.info(`serve enabled`);
     }
   } catch (err) {
-    params.logTailscale.warn(
-      `${params.tailscaleMode} failed: ${err instanceof Error ? err.message : String(err)}`,
-    );
+    params.logTailscale.warn(`serve failed: ${err instanceof Error ? err.message : String(err)}`);
   }
 
   if (!params.resetOnExit) {
@@ -44,14 +38,10 @@ export async function startGatewayTailscaleExposure(params: {
 
   return async () => {
     try {
-      if (params.tailscaleMode === "serve") {
-        await disableTailscaleServe();
-      } else {
-        await disableTailscaleFunnel();
-      }
+      await disableTailscaleServe();
     } catch (err) {
       params.logTailscale.warn(
-        `${params.tailscaleMode} cleanup failed: ${err instanceof Error ? err.message : String(err)}`,
+        `serve cleanup failed: ${err instanceof Error ? err.message : String(err)}`,
       );
     }
   };

@@ -431,109 +431,25 @@ export function registerPluginsCli(program: Command) {
         process.exit(1);
       }
 
-      const looksLikePath =
-        raw.startsWith(".") ||
-        raw.startsWith("~") ||
-        path.isAbsolute(raw) ||
-        raw.endsWith(".ts") ||
-        raw.endsWith(".js") ||
-        raw.endsWith(".mjs") ||
-        raw.endsWith(".cjs") ||
-        raw.endsWith(".tgz") ||
-        raw.endsWith(".tar.gz") ||
-        raw.endsWith(".tar") ||
-        raw.endsWith(".zip");
-      if (looksLikePath) {
-        defaultRuntime.error(`Path not found: ${resolved}`);
-        process.exit(1);
-      }
-
-      const result = await installPluginFromNpmSpec({
-        spec: raw,
-        logger: {
-          info: (msg) => defaultRuntime.log(msg),
-          warn: (msg) => defaultRuntime.log(theme.warn(msg)),
-        },
-      });
-      if (!result.ok) {
-        defaultRuntime.error(result.error);
-        process.exit(1);
-      }
-
-      let next: OpenClawConfig = {
-        ...cfg,
-        plugins: {
-          ...cfg.plugins,
-          entries: {
-            ...cfg.plugins?.entries,
-            [result.pluginId]: {
-              ...(cfg.plugins?.entries?.[result.pluginId] as object | undefined),
-              enabled: true,
-            },
-          },
-        },
-      };
-      next = recordPluginInstall(next, {
-        pluginId: result.pluginId,
-        source: "npm",
-        spec: raw,
-        installPath: result.targetDir,
-        version: result.version,
-      });
-      const slotResult = applySlotSelectionForPlugin(next, result.pluginId);
-      next = slotResult.config;
-      await writeConfigFile(next);
-      logSlotWarnings(slotResult.warnings);
-      defaultRuntime.log(`Installed plugin: ${result.pluginId}`);
-      defaultRuntime.log(`Restart the gateway to load plugins.`);
+      // SECURITY HARDENING: Remote plugin installation from npm is disabled.
+      // Only local file paths are allowed in this hardened build.
+      defaultRuntime.error(
+        `Remote plugin installation is disabled in this hardened build. Only local file paths are allowed.`,
+      );
+      defaultRuntime.error(`Path not found: ${resolved}`);
+      process.exit(1);
     });
 
   plugins
     .command("update")
-    .description("Update installed plugins (npm installs only)")
+    .description("Update installed plugins (disabled in hardened build)")
     .argument("[id]", "Plugin id (omit with --all)")
     .option("--all", "Update all tracked plugins", false)
     .option("--dry-run", "Show what would change without writing", false)
-    .action(async (id: string | undefined, opts: PluginUpdateOptions) => {
-      const cfg = loadConfig();
-      const installs = cfg.plugins?.installs ?? {};
-      const targets = opts.all ? Object.keys(installs) : id ? [id] : [];
-
-      if (targets.length === 0) {
-        if (opts.all) {
-          defaultRuntime.log("No npm-installed plugins to update.");
-          return;
-        }
-        defaultRuntime.error("Provide a plugin id or use --all.");
-        process.exit(1);
-      }
-
-      const result = await updateNpmInstalledPlugins({
-        config: cfg,
-        pluginIds: targets,
-        dryRun: opts.dryRun,
-        logger: {
-          info: (msg) => defaultRuntime.log(msg),
-          warn: (msg) => defaultRuntime.log(theme.warn(msg)),
-        },
-      });
-
-      for (const outcome of result.outcomes) {
-        if (outcome.status === "error") {
-          defaultRuntime.log(theme.error(outcome.message));
-          continue;
-        }
-        if (outcome.status === "skipped") {
-          defaultRuntime.log(theme.warn(outcome.message));
-          continue;
-        }
-        defaultRuntime.log(outcome.message);
-      }
-
-      if (!opts.dryRun && result.changed) {
-        await writeConfigFile(result.config);
-        defaultRuntime.log("Restart the gateway to load plugins.");
-      }
+    .action(async () => {
+      // SECURITY HARDENING: Remote plugin updates are disabled.
+      defaultRuntime.log("Remote plugin updates are disabled in this hardened build.");
+      defaultRuntime.log("Only local file paths are allowed for plugin installation.");
     });
 
   plugins

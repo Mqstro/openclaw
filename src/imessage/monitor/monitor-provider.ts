@@ -180,8 +180,8 @@ export async function monitorIMessageProvider(opts: MonitorIMessageOpts = {}): P
       (imessageCfg.allowFrom && imessageCfg.allowFrom.length > 0 ? imessageCfg.allowFrom : []),
   );
   const defaultGroupPolicy = cfg.channels?.defaults?.groupPolicy;
-  const groupPolicy = imessageCfg.groupPolicy ?? defaultGroupPolicy ?? "open";
-  const dmPolicy = imessageCfg.dmPolicy ?? "pairing";
+  const groupPolicy = imessageCfg.groupPolicy ?? defaultGroupPolicy ?? "allowlist";
+  const dmPolicy = imessageCfg.dmPolicy ?? "allowlist";
   const includeAttachments = opts.includeAttachments ?? imessageCfg.includeAttachments ?? false;
   const mediaMaxBytes = (opts.mediaMaxMb ?? imessageCfg.mediaMaxMb ?? 16) * 1024 * 1024;
   const cliPath = opts.cliPath ?? imessageCfg.cliPath ?? "imsg";
@@ -328,23 +328,21 @@ export async function monitorIMessageProvider(opts: MonitorIMessageOpts = {}): P
 
     const dmHasWildcard = effectiveDmAllowFrom.includes("*");
     const dmAuthorized =
-      dmPolicy === "open"
-        ? true
-        : dmHasWildcard ||
-          (effectiveDmAllowFrom.length > 0 &&
-            isAllowedIMessageSender({
-              allowFrom: effectiveDmAllowFrom,
-              sender,
-              chatId: chatId ?? undefined,
-              chatGuid,
-              chatIdentifier,
-            }));
+      dmHasWildcard ||
+      (effectiveDmAllowFrom.length > 0 &&
+        isAllowedIMessageSender({
+          allowFrom: effectiveDmAllowFrom,
+          sender,
+          chatId: chatId ?? undefined,
+          chatGuid,
+          chatIdentifier,
+        }));
     if (!isGroup) {
       if (dmPolicy === "disabled") {
         return;
       }
       if (!dmAuthorized) {
-        if (dmPolicy === "pairing") {
+        if (dmPolicy === "allowlist") {
           const senderId = normalizeIMessageHandle(sender);
           const { code, created } = await upsertChannelPairingRequest({
             channel: "imessage",

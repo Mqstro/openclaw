@@ -348,93 +348,9 @@ export async function upsertChannelPairingRequest(params: {
   /** Extension channels can pass their adapter directly to bypass registry lookup. */
   pairingAdapter?: ChannelPairingAdapter;
 }): Promise<{ code: string; created: boolean }> {
-  const env = params.env ?? process.env;
-  const filePath = resolvePairingPath(params.channel, env);
-  return await withFileLock(
-    filePath,
-    { version: 1, requests: [] } satisfies PairingStore,
-    async () => {
-      const { value } = await readJsonFile<PairingStore>(filePath, {
-        version: 1,
-        requests: [],
-      });
-      const now = new Date().toISOString();
-      const nowMs = Date.now();
-      const id = normalizeId(params.id);
-      const meta =
-        params.meta && typeof params.meta === "object"
-          ? Object.fromEntries(
-              Object.entries(params.meta)
-                .map(([k, v]) => [k, String(v ?? "").trim()] as const)
-                .filter(([_, v]) => Boolean(v)),
-            )
-          : undefined;
-
-      let reqs = Array.isArray(value.requests) ? value.requests : [];
-      const { requests: prunedExpired, removed: expiredRemoved } = pruneExpiredRequests(
-        reqs,
-        nowMs,
-      );
-      reqs = prunedExpired;
-      const existingIdx = reqs.findIndex((r) => r.id === id);
-      const existingCodes = new Set(
-        reqs.map((req) =>
-          String(req.code ?? "")
-            .trim()
-            .toUpperCase(),
-        ),
-      );
-
-      if (existingIdx >= 0) {
-        const existing = reqs[existingIdx];
-        const existingCode =
-          existing && typeof existing.code === "string" ? existing.code.trim() : "";
-        const code = existingCode || generateUniqueCode(existingCodes);
-        const next: PairingRequest = {
-          id,
-          code,
-          createdAt: existing?.createdAt ?? now,
-          lastSeenAt: now,
-          meta: meta ?? existing?.meta,
-        };
-        reqs[existingIdx] = next;
-        const { requests: capped } = pruneExcessRequests(reqs, PAIRING_PENDING_MAX);
-        await writeJsonFile(filePath, {
-          version: 1,
-          requests: capped,
-        } satisfies PairingStore);
-        return { code, created: false };
-      }
-
-      const { requests: capped, removed: cappedRemoved } = pruneExcessRequests(
-        reqs,
-        PAIRING_PENDING_MAX,
-      );
-      reqs = capped;
-      if (PAIRING_PENDING_MAX > 0 && reqs.length >= PAIRING_PENDING_MAX) {
-        if (expiredRemoved || cappedRemoved) {
-          await writeJsonFile(filePath, {
-            version: 1,
-            requests: reqs,
-          } satisfies PairingStore);
-        }
-        return { code: "", created: false };
-      }
-      const code = generateUniqueCode(existingCodes);
-      const next: PairingRequest = {
-        id,
-        code,
-        createdAt: now,
-        lastSeenAt: now,
-        ...(meta ? { meta } : {}),
-      };
-      await writeJsonFile(filePath, {
-        version: 1,
-        requests: [...reqs, next],
-      } satisfies PairingStore);
-      return { code, created: true };
-    },
-  );
+  // SECURITY HARDENING: Pairing is disabled in this hardened build.
+  // Only allowlist-based access is supported.
+  return { code: "", created: false };
 }
 
 export async function approveChannelPairingCode(params: {
@@ -442,49 +358,7 @@ export async function approveChannelPairingCode(params: {
   code: string;
   env?: NodeJS.ProcessEnv;
 }): Promise<{ id: string; entry?: PairingRequest } | null> {
-  const env = params.env ?? process.env;
-  const code = params.code.trim().toUpperCase();
-  if (!code) {
-    return null;
-  }
-
-  const filePath = resolvePairingPath(params.channel, env);
-  return await withFileLock(
-    filePath,
-    { version: 1, requests: [] } satisfies PairingStore,
-    async () => {
-      const { value } = await readJsonFile<PairingStore>(filePath, {
-        version: 1,
-        requests: [],
-      });
-      const reqs = Array.isArray(value.requests) ? value.requests : [];
-      const nowMs = Date.now();
-      const { requests: pruned, removed } = pruneExpiredRequests(reqs, nowMs);
-      const idx = pruned.findIndex((r) => String(r.code ?? "").toUpperCase() === code);
-      if (idx < 0) {
-        if (removed) {
-          await writeJsonFile(filePath, {
-            version: 1,
-            requests: pruned,
-          } satisfies PairingStore);
-        }
-        return null;
-      }
-      const entry = pruned[idx];
-      if (!entry) {
-        return null;
-      }
-      pruned.splice(idx, 1);
-      await writeJsonFile(filePath, {
-        version: 1,
-        requests: pruned,
-      } satisfies PairingStore);
-      await addChannelAllowFromStoreEntry({
-        channel: params.channel,
-        entry: entry.id,
-        env,
-      });
-      return { id: entry.id, entry };
-    },
-  );
+  // SECURITY HARDENING: Pairing is disabled in this hardened build.
+  // Only allowlist-based access is supported. Use addChannelAllowFromStoreEntry() directly.
+  return null;
 }

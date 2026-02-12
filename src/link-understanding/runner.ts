@@ -104,47 +104,11 @@ async function runLinkEntries(params: {
   return null;
 }
 
-export async function runLinkUnderstanding(params: {
+export async function runLinkUnderstanding(_params: {
   cfg: OpenClawConfig;
   ctx: MsgContext;
   message?: string;
 }): Promise<LinkUnderstandingResult> {
-  const config = params.cfg.tools?.links;
-  if (!config || config.enabled === false) {
-    return { urls: [], outputs: [] };
-  }
-
-  const scopeDecision = resolveScopeDecision({ config, ctx: params.ctx });
-  if (scopeDecision === "deny") {
-    if (shouldLogVerbose()) {
-      logVerbose("Link understanding disabled by scope policy.");
-    }
-    return { urls: [], outputs: [] };
-  }
-
-  const message = params.message ?? params.ctx.CommandBody ?? params.ctx.RawBody ?? params.ctx.Body;
-  const links = extractLinksFromMessage(message ?? "", { maxLinks: config?.maxLinks });
-  if (links.length === 0) {
-    return { urls: [], outputs: [] };
-  }
-
-  const entries = config?.models ?? [];
-  if (entries.length === 0) {
-    return { urls: links, outputs: [] };
-  }
-
-  const outputs: string[] = [];
-  for (const url of links) {
-    const output = await runLinkEntries({
-      entries,
-      ctx: params.ctx,
-      url,
-      config,
-    });
-    if (output) {
-      outputs.push(output);
-    }
-  }
-
-  return { urls: links, outputs };
+  // --- HARDENED BUILD: Link understanding disabled ---
+  return { urls: [], outputs: [] };
 }

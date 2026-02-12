@@ -1,7 +1,7 @@
 import { z } from "zod";
 
-const DmPolicySchema = z.enum(["open", "allowlist", "pairing", "disabled"]);
-const GroupPolicySchema = z.enum(["open", "allowlist", "disabled"]);
+const DmPolicySchema = z.enum(["allowlist", "disabled"]);
+const GroupPolicySchema = z.enum(["allowlist", "disabled"]);
 
 const LineGroupConfigSchema = z
   .object({
@@ -23,7 +23,7 @@ const LineAccountConfigSchema = z
     name: z.string().optional(),
     allowFrom: z.array(z.union([z.string(), z.number()])).optional(),
     groupAllowFrom: z.array(z.union([z.string(), z.number()])).optional(),
-    dmPolicy: DmPolicySchema.optional().default("pairing"),
+    dmPolicy: DmPolicySchema.optional().default("allowlist"),
     groupPolicy: GroupPolicySchema.optional().default("allowlist"),
     responsePrefix: z.string().optional(),
     mediaMaxMb: z.number().optional(),
@@ -42,7 +42,7 @@ export const LineConfigSchema = z
     name: z.string().optional(),
     allowFrom: z.array(z.union([z.string(), z.number()])).optional(),
     groupAllowFrom: z.array(z.union([z.string(), z.number()])).optional(),
-    dmPolicy: DmPolicySchema.optional().default("pairing"),
+    dmPolicy: DmPolicySchema.optional().default("allowlist"),
     groupPolicy: GroupPolicySchema.optional().default("allowlist"),
     responsePrefix: z.string().optional(),
     mediaMaxMb: z.number().optional(),

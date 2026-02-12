@@ -350,11 +350,9 @@ export function createSlackMonitorContext(params: {
         );
         return false;
       }
-      // When groupPolicy is "open", only block channels that are EXPLICITLY denied
-      // (i.e., have a matching config entry with allow:false). Channels not in the
-      // config (matchSource undefined) should be allowed under open policy.
-      const hasExplicitConfig = Boolean(channelConfig?.matchSource);
-      if (!channelAllowed && (params.groupPolicy !== "open" || hasExplicitConfig)) {
+      // Block channels that are EXPLICITLY denied
+      // (i.e., have a matching config entry with allow:false).
+      if (!channelAllowed) {
         logVerbose(`slack: drop channel ${p.channelId} (${channelMatchMeta})`);
         return false;
       }

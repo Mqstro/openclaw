@@ -231,7 +231,7 @@ export function createTelegramBot(opts: TelegramBotOptions) {
   );
   const groupHistories = new Map<string, HistoryEntry[]>();
   const textLimit = resolveTextChunkLimit(cfg, "telegram", account.accountId);
-  const dmPolicy = telegramCfg.dmPolicy ?? "pairing";
+  const dmPolicy = telegramCfg.dmPolicy ?? "allowlist";
   const allowFrom = opts.allowFrom ?? telegramCfg.allowFrom;
   const groupAllowFrom =
     opts.groupAllowFrom ??

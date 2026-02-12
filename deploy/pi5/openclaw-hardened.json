@@ -1,0 +1,78 @@
+{
+  "gateway": {
+    "bind": "loopback",
+    "port": 18789,
+    "tailscale": {
+      "mode": "serve",
+      "resetOnExit": true
+    },
+    "auth": {
+      "mode": "token",
+      "allowTailscale": true
+    }
+  },
+  "channels": {
+    "whatsapp": {
+      "enabled": true,
+      "dmPolicy": "allowlist",
+      "allowFrom": ["+49REPLACE_WITH_YOUR_NUMBER"],
+      "groupPolicy": "disabled",
+      "sendReadReceipts": false
+    }
+  },
+  "session": {
+    "dmScope": "per-channel-peer"
+  },
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "claude-sonnet-4-5-20250929"
+      },
+      "sandbox": {
+        "mode": "non-main",
+        "scope": "agent",
+        "workspaceAccess": "ro",
+        "docker": {
+          "readOnlyRoot": true,
+          "capDrop": ["ALL"],
+          "network": "none",
+          "pidsLimit": 256,
+          "memory": "512m"
+        }
+      },
+      "tools": {
+        "deny": ["browser", "web_search", "web_fetch", "canvas"]
+      }
+    },
+    "list": [
+      {
+        "id": "personal",
+        "sandbox": {
+          "mode": "off"
+        },
+        "tools": {
+          "allow": ["read", "write", "exec", "cron"],
+          "deny": ["browser", "web_search", "web_fetch", "canvas"]
+        }
+      }
+    ]
+  },
+  "skills": {
+    "managed": {
+      "enabled": false
+    }
+  },
+  "discovery": {
+    "wideArea": {
+      "enabled": false
+    },
+    "mdns": {
+      "mode": "off"
+    }
+  },
+  "canvasHost": {
+    "enabled": false
+  },
+  "talk": {},
+  "audio": {}
+}

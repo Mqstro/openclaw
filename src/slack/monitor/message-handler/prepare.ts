@@ -133,14 +133,14 @@ export async function prepareSlackMessage(params: {
       logVerbose("slack: drop dm (dms disabled)");
       return null;
     }
-    if (ctx.dmPolicy !== "open") {
+    {
       const allowMatch = resolveSlackAllowListMatch({
         allowList: allowFromLower,
         id: directUserId,
       });
       const allowMatchMeta = formatAllowlistMatchMeta(allowMatch);
       if (!allowMatch.allowed) {
-        if (ctx.dmPolicy === "pairing") {
+        if (ctx.dmPolicy === "allowlist") {
           const sender = await ctx.resolveUserName(directUserId);
           const senderName = sender?.name ?? undefined;
           const { code, created } = await upsertChannelPairingRequest({

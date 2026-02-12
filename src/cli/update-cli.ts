@@ -437,106 +437,13 @@ function formatGitStatusLine(params: {
 }
 
 export async function updateStatusCommand(opts: UpdateStatusOptions): Promise<void> {
-  const timeoutMs = opts.timeout ? Number.parseInt(opts.timeout, 10) * 1000 : undefined;
-  if (timeoutMs !== undefined && (Number.isNaN(timeoutMs) || timeoutMs <= 0)) {
-    defaultRuntime.error("--timeout must be a positive integer (seconds)");
-    defaultRuntime.exit(1);
-    return;
-  }
-
-  const root =
-    (await resolveOpenClawPackageRoot({
-      moduleUrl: import.meta.url,
-      argv1: process.argv[1],
-      cwd: process.cwd(),
-    })) ?? process.cwd();
-  const configSnapshot = await readConfigFileSnapshot();
-  const configChannel = configSnapshot.valid
-    ? normalizeUpdateChannel(configSnapshot.config.update?.channel)
-    : null;
-
-  const update = await checkUpdateStatus({
-    root,
-    timeoutMs: timeoutMs ?? 3500,
-    fetchGit: true,
-    includeRegistry: true,
-  });
-  const channelInfo = resolveEffectiveUpdateChannel({
-    configChannel,
-    installKind: update.installKind,
-    git: update.git ? { tag: update.git.tag, branch: update.git.branch } : undefined,
-  });
-  const channelLabel = formatUpdateChannelLabel({
-    channel: channelInfo.channel,
-    source: channelInfo.source,
-    gitTag: update.git?.tag ?? null,
-    gitBranch: update.git?.branch ?? null,
-  });
-  const gitLabel =
-    update.installKind === "git"
-      ? formatGitStatusLine({
-          branch: update.git?.branch ?? null,
-          tag: update.git?.tag ?? null,
-          sha: update.git?.sha ?? null,
-        })
-      : null;
-  const updateAvailability = resolveUpdateAvailability(update);
-  const updateLine = formatUpdateOneLiner(update).replace(/^Update:\s*/i, "");
-
+  // SECURITY HARDENING: Update status check is disabled in this hardened build.
   if (opts.json) {
-    defaultRuntime.log(
-      JSON.stringify(
-        {
-          update,
-          channel: {
-            value: channelInfo.channel,
-            source: channelInfo.source,
-            label: channelLabel,
-            config: configChannel,
-          },
-          availability: updateAvailability,
-        },
-        null,
-        2,
-      ),
-    );
+    defaultRuntime.log(JSON.stringify({ disabled: true, reason: "hardened build" }, null, 2));
     return;
   }
-
-  const tableWidth = Math.max(60, (process.stdout.columns ?? 120) - 1);
-  const installLabel =
-    update.installKind === "git"
-      ? `git (${update.root ?? "unknown"})`
-      : update.installKind === "package"
-        ? update.packageManager
-        : "unknown";
-  const rows = [
-    { Item: "Install", Value: installLabel },
-    { Item: "Channel", Value: channelLabel },
-    ...(gitLabel ? [{ Item: "Git", Value: gitLabel }] : []),
-    {
-      Item: "Update",
-      Value: updateAvailability.available ? theme.warn(`available · ${updateLine}`) : updateLine,
-    },
-  ];
-
-  defaultRuntime.log(theme.heading("OpenClaw update status"));
-  defaultRuntime.log("");
-  defaultRuntime.log(
-    renderTable({
-      width: tableWidth,
-      columns: [
-        { key: "Item", header: "Item", minWidth: 10 },
-        { key: "Value", header: "Value", flex: true, minWidth: 24 },
-      ],
-      rows,
-    }).trimEnd(),
-  );
-  defaultRuntime.log("");
-  const updateHint = formatUpdateAvailableHint(update);
-  if (updateHint) {
-    defaultRuntime.log(theme.warn(updateHint));
-  }
+  defaultRuntime.log("Update checks are disabled in this hardened build.");
+  defaultRuntime.log("No outbound network calls will be made to check for new versions.");
 }
 
 function getStepLabel(step: UpdateStepInfo): string {
@@ -673,6 +580,15 @@ function printResult(result: UpdateRunResult, opts: PrintResultOptions) {
 }
 
 export async function updateCommand(opts: UpdateCommandOptions): Promise<void> {
+  // SECURITY HARDENING: Auto-update is disabled in this hardened build.
+  if (opts.json) {
+    defaultRuntime.log(JSON.stringify({ disabled: true, reason: "hardened build" }, null, 2));
+  } else {
+    defaultRuntime.log("Updates are disabled in this hardened build.");
+    defaultRuntime.log("No outbound network calls will be made. Update manually by redeploying.");
+  }
+  return;
+
   suppressDeprecations();
   const timeoutMs = opts.timeout ? Number.parseInt(opts.timeout, 10) * 1000 : undefined;
   const shouldRestart = opts.restart !== false;
@@ -1103,6 +1019,11 @@ export async function updateCommand(opts: UpdateCommandOptions): Promise<void> {
 }
 
 export async function updateWizardCommand(opts: UpdateWizardOptions = {}): Promise<void> {
+  // SECURITY HARDENING: Update wizard is disabled in this hardened build.
+  defaultRuntime.log("Updates are disabled in this hardened build.");
+  defaultRuntime.log("No outbound network calls will be made. Update manually by redeploying.");
+  return;
+
   if (!process.stdin.isTTY) {
     defaultRuntime.error(
       "Update wizard requires a TTY. Use `openclaw update --channel <stable|beta|dev>` instead.",

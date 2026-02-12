@@ -154,7 +154,7 @@ function buildDocsSection(params: { docsPath?: string; isMinimal: boolean; readT
     "Mirror: https://docs.openclaw.ai",
     "Source: https://github.com/openclaw/openclaw",
     "Community: https://discord.com/invite/clawd",
-    "Find new skills: https://clawhub.com",
+    "Remote skill loading (ClawHub) is disabled in this hardened build.",
     "For OpenClaw behavior, commands, config, or architecture: consult local docs first.",
     "When diagnosing issues, run `openclaw status` yourself when possible; only ask the user if you lack access (e.g., sandboxed).",
     "",
@@ -226,11 +226,8 @@ export function buildAgentSystemPrompt(params: {
     ls: "List directory contents",
     exec: "Run shell commands (pty available for TTY-required CLIs)",
     process: "Manage background exec sessions",
-    web_search: "Search the web (Brave API)",
-    web_fetch: "Fetch and extract readable content from a URL",
+    // web_search, web_fetch, browser, canvas disabled in hardened build
     // Channel docking: add login tools here when a channel needs interactive linking.
-    browser: "Control web browser",
-    canvas: "Present/eval/snapshot the Canvas",
     nodes: "List/describe/notify/camera/screen on paired nodes",
     cron: "Manage cron jobs and wake events (use for reminders; when scheduling a reminder, write the systemEvent text as something that will read like a reminder when it fires, and mention that it is a reminder depending on the time gap between setting and firing; include recent context in reminder text if appropriate)",
     message: "Send messages and channel actions",
@@ -255,10 +252,7 @@ export function buildAgentSystemPrompt(params: {
     "ls",
     "exec",
     "process",
-    "web_search",
-    "web_fetch",
-    "browser",
-    "canvas",
+    // web_search, web_fetch, browser, canvas removed in hardened build
     "nodes",
     "cron",
     "message",

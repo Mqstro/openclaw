@@ -12,8 +12,7 @@ export const IRC_FIELD_LABELS: Record<string, string> = {
 export const IRC_FIELD_HELP: Record<string, string> = {
   "channels.irc.configWrites":
     "Allow IRC to write config in response to channel events/commands (default: true).",
-  "channels.irc.dmPolicy":
-    'Direct message access control ("pairing" recommended). "open" requires channels.irc.allowFrom=["*"].',
+  "channels.irc.dmPolicy": 'Direct message access control ("allowlist" recommended).',
   "channels.irc.nickserv.enabled":
     "Enable NickServ identify/register after connect (defaults to enabled when password is configured).",
   "channels.irc.nickserv.service": "NickServ service nick (default: NickServ).",

@@ -13,13 +13,11 @@ import {
 } from "../../../signal/accounts.js";
 import { formatDocsLink } from "../../../terminal/links.js";
 import { normalizeE164 } from "../../../utils.js";
-import { addWildcardAllowFrom, promptAccountId } from "./helpers.js";
+import { promptAccountId } from "./helpers.js";
 
 const channel = "signal" as const;
 
 function setSignalDmPolicy(cfg: OpenClawConfig, dmPolicy: DmPolicy) {
-  const allowFrom =
-    dmPolicy === "open" ? addWildcardAllowFrom(cfg.channels?.signal?.allowFrom) : undefined;
   return {
     ...cfg,
     channels: {
@@ -27,7 +25,6 @@ function setSignalDmPolicy(cfg: OpenClawConfig, dmPolicy: DmPolicy) {
       signal: {
         ...cfg.channels?.signal,
         dmPolicy,
-        ...(allowFrom ? { allowFrom } : {}),
       },
     },
   };
@@ -155,7 +152,7 @@ const dmPolicy: ChannelOnboardingDmPolicy = {
   channel,
   policyKey: "channels.signal.dmPolicy",
   allowFromKey: "channels.signal.allowFrom",
-  getCurrent: (cfg) => cfg.channels?.signal?.dmPolicy ?? "pairing",
+  getCurrent: (cfg) => cfg.channels?.signal?.dmPolicy ?? "allowlist",
   setPolicy: (cfg, policy) => setSignalDmPolicy(cfg, policy),
   promptAllowFrom: promptSignalAllowFrom,
 };

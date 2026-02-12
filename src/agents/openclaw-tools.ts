@@ -66,14 +66,10 @@ export function createOpenClawTools(options?: {
         modelHasVision: options?.modelHasVision,
       })
     : null;
-  const webSearchTool = createWebSearchTool({
-    config: options?.config,
-    sandboxed: options?.sandboxed,
-  });
-  const webFetchTool = createWebFetchTool({
-    config: options?.config,
-    sandboxed: options?.sandboxed,
-  });
+  // --- HARDENED BUILD: web tools disabled ---
+  const webSearchTool = null;
+  const webFetchTool = null;
+  // --- END HARDENED BUILD ---
   const messageTool = options?.disableMessageTool
     ? null
     : createMessageTool({

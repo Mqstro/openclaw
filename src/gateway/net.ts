@@ -143,63 +143,32 @@ export function isLocalGatewayAddress(ip: string | undefined): boolean {
  *
  * Modes:
  * - loopback: 127.0.0.1 (rarely fails, but handled gracefully)
- * - lan: always 0.0.0.0 (no fallback)
  * - tailnet: Tailnet IPv4 if available, else loopback
- * - auto: Loopback if available, else 0.0.0.0
- * - custom: User-specified IP, fallback to 0.0.0.0 if unavailable
  *
  * @returns The bind address to use (never null)
  */
 export async function resolveGatewayBindHost(
   bind: import("../config/config.js").GatewayBindMode | undefined,
-  customHost?: string,
 ): Promise<string> {
   const mode = bind ?? "loopback";
-
-  if (mode === "loopback") {
-    // 127.0.0.1 rarely fails, but handle gracefully
-    if (await canBindToHost("127.0.0.1")) {
-      return "127.0.0.1";
-    }
-    return "0.0.0.0"; // extreme fallback
-  }
 
   if (mode === "tailnet") {
     const tailnetIP = pickPrimaryTailnetIPv4();
     if (tailnetIP && (await canBindToHost(tailnetIP))) {
       return tailnetIP;
     }
+    // Tailnet unavailable, fall back to loopback
     if (await canBindToHost("127.0.0.1")) {
       return "127.0.0.1";
     }
-    return "0.0.0.0";
+    return "127.0.0.1";
   }
 
-  if (mode === "lan") {
-    return "0.0.0.0";
+  // Default: loopback
+  if (await canBindToHost("127.0.0.1")) {
+    return "127.0.0.1";
   }
-
-  if (mode === "custom") {
-    const host = customHost?.trim();
-    if (!host) {
-      return "0.0.0.0";
-    } // invalid config → fall back to all
-
-    if (isValidIPv4(host) && (await canBindToHost(host))) {
-      return host;
-    }
-    // Custom IP failed → fall back to LAN
-    return "0.0.0.0";
-  }
-
-  if (mode === "auto") {
-    if (await canBindToHost("127.0.0.1")) {
-      return "127.0.0.1";
-    }
-    return "0.0.0.0";
-  }
-
-  return "0.0.0.0";
+  return "127.0.0.1"; // always loopback, never 0.0.0.0
 }
 
 /**

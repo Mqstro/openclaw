@@ -332,7 +332,7 @@ export const registerTelegramHandlers = ({
         allowFrom: telegramCfg.allowFrom,
         storeAllowFrom,
       });
-      const dmPolicy = telegramCfg.dmPolicy ?? "pairing";
+      const dmPolicy = telegramCfg.dmPolicy ?? "allowlist";
       const senderId = callback.from?.id ? String(callback.from.id) : "";
       const senderUsername = callback.from?.username ?? "";
 
@@ -368,7 +368,7 @@ export const registerTelegramHandlers = ({
           groupConfig?.groupPolicy,
           telegramCfg.groupPolicy,
           defaultGroupPolicy,
-          "open",
+          "allowlist",
         );
         if (groupPolicy === "disabled") {
           logVerbose(`Blocked telegram group message (groupPolicy: disabled)`);
@@ -411,7 +411,7 @@ export const registerTelegramHandlers = ({
           if (dmPolicy === "disabled") {
             return;
           }
-          if (dmPolicy !== "open") {
+          {
             const allowed =
               effectiveDmAllow.hasWildcard ||
               (effectiveDmAllow.hasEntries &&
@@ -730,7 +730,6 @@ export const registerTelegramHandlers = ({
           }
         }
         // Group policy filtering: controls how group messages are handled
-        // - "open": groups bypass allowFrom, only mention-gating applies
         // - "disabled": block all group messages entirely
         // - "allowlist": only allow group messages from senders in groupAllowFrom/allowFrom
         const defaultGroupPolicy = cfg.channels?.defaults?.groupPolicy;
@@ -739,7 +738,7 @@ export const registerTelegramHandlers = ({
           groupConfig?.groupPolicy,
           telegramCfg.groupPolicy,
           defaultGroupPolicy,
-          "open",
+          "allowlist",
         );
         if (groupPolicy === "disabled") {
           logVerbose(`Blocked telegram group message (groupPolicy: disabled)`);

@@ -290,7 +290,7 @@ export async function monitorSignalProvider(opts: MonitorSignalOpts = {}): Promi
   const chunkMode = resolveChunkMode(cfg, "signal", accountInfo.accountId);
   const baseUrl = opts.baseUrl?.trim() || accountInfo.baseUrl;
   const account = opts.account?.trim() || accountInfo.config.account?.trim();
-  const dmPolicy = accountInfo.config.dmPolicy ?? "pairing";
+  const dmPolicy = accountInfo.config.dmPolicy ?? "allowlist";
   const allowFrom = normalizeAllowList(opts.allowFrom ?? accountInfo.config.allowFrom);
   const groupAllowFrom = normalizeAllowList(
     opts.groupAllowFrom ??

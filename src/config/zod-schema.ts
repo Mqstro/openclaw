@@ -371,15 +371,7 @@ export const OpenClawSchema = z
       .object({
         port: z.number().int().positive().optional(),
         mode: z.union([z.literal("local"), z.literal("remote")]).optional(),
-        bind: z
-          .union([
-            z.literal("auto"),
-            z.literal("lan"),
-            z.literal("loopback"),
-            z.literal("custom"),
-            z.literal("tailnet"),
-          ])
-          .optional(),
+        bind: z.union([z.literal("loopback"), z.literal("tailnet")]).optional(),
         controlUi: z
           .object({
             enabled: z.boolean().optional(),
@@ -403,7 +395,7 @@ export const OpenClawSchema = z
         trustedProxies: z.array(z.string()).optional(),
         tailscale: z
           .object({
-            mode: z.union([z.literal("off"), z.literal("serve"), z.literal("funnel")]).optional(),
+            mode: z.union([z.literal("off"), z.literal("serve")]).optional(),
             resetOnExit: z.boolean().optional(),
           })
           .strict()

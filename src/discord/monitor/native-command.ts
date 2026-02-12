@@ -34,11 +34,7 @@ import { finalizeInboundContext } from "../../auto-reply/reply/inbound-context.j
 import { dispatchReplyWithDispatcher } from "../../auto-reply/reply/provider-dispatcher.js";
 import { resolveCommandAuthorizedFromAuthorizers } from "../../channels/command-gating.js";
 import { createReplyPrefixOptions } from "../../channels/reply-prefix.js";
-import { buildPairingReply } from "../../pairing/pairing-messages.js";
-import {
-  readChannelAllowFromStore,
-  upsertChannelPairingRequest,
-} from "../../pairing/pairing-store.js";
+import { readChannelAllowFromStore } from "../../pairing/pairing-store.js";
 import { resolveAgentRoute } from "../../routing/resolve-route.js";
 import { buildUntrustedChannelMetadata } from "../../security/channel-metadata.js";
 import { loadWebMedia } from "../../web/media.js";
@@ -602,7 +598,7 @@ async function dispatchDiscordCommandInteraction(params: {
       Boolean(guildInfo?.channels) && Object.keys(guildInfo?.channels ?? {}).length > 0;
     const channelAllowed = channelConfig?.allowed !== false;
     const allowByPolicy = isDiscordGroupAllowedByPolicy({
-      groupPolicy: discordConfig?.groupPolicy ?? "open",
+      groupPolicy: discordConfig?.groupPolicy ?? "allowlist",
       guildAllowlisted: Boolean(guildInfo),
       channelAllowlistConfigured,
       channelAllowed,
@@ -613,14 +609,14 @@ async function dispatchDiscordCommandInteraction(params: {
     }
   }
   const dmEnabled = discordConfig?.dm?.enabled ?? true;
-  const dmPolicy = discordConfig?.dm?.policy ?? "pairing";
+  const dmPolicy = discordConfig?.dm?.policy ?? "allowlist";
   let commandAuthorized = true;
   if (isDirectMessage) {
     if (!dmEnabled || dmPolicy === "disabled") {
       await respond("Discord DMs are disabled.");
       return;
     }
-    if (dmPolicy !== "open") {
+    {
       const storeAllowFrom = await readChannelAllowFromStore("discord").catch(() => []);
       const effectiveAllowFrom = [...(discordConfig?.dm?.allowFrom ?? []), ...storeAllowFrom];
       const allowList = normalizeDiscordAllowList(effectiveAllowFrom, ["discord:", "user:", "pk:"]);
@@ -633,28 +629,7 @@ async function dispatchDiscordCommandInteraction(params: {
         : false;
       if (!permitted) {
         commandAuthorized = false;
-        if (dmPolicy === "pairing") {
-          const { code, created } = await upsertChannelPairingRequest({
-            channel: "discord",
-            id: user.id,
-            meta: {
-              tag: sender.tag,
-              name: sender.name,
-            },
-          });
-          if (created) {
-            await respond(
-              buildPairingReply({
-                channel: "discord",
-                idLine: `Your Discord user id: ${user.id}`,
-                code,
-              }),
-              { ephemeral: true },
-            );
-          }
-        } else {
-          await respond("You are not authorized to use this command.", { ephemeral: true });
-        }
+        await respond("You are not authorized to use this command.", { ephemeral: true });
         return;
       }
       commandAuthorized = true;

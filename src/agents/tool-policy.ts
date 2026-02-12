@@ -15,7 +15,7 @@ const TOOL_NAME_ALIASES: Record<string, string> = {
 export const TOOL_GROUPS: Record<string, string[]> = {
   // NOTE: Keep canonical (lowercase) tool names here.
   "group:memory": ["memory_search", "memory_get"],
-  "group:web": ["web_search", "web_fetch"],
+  "group:web": [],
   // Basic workspace/file tools
   "group:fs": ["read", "write", "edit", "apply_patch"],
   // Host/runtime execution tools
@@ -28,8 +28,8 @@ export const TOOL_GROUPS: Record<string, string[]> = {
     "sessions_spawn",
     "session_status",
   ],
-  // UI helpers
-  "group:ui": ["browser", "canvas"],
+  // UI helpers (browser disabled in hardened build)
+  "group:ui": [],
   // Automation + infra
   "group:automation": ["cron", "gateway"],
   // Messaging surface
@@ -37,9 +37,8 @@ export const TOOL_GROUPS: Record<string, string[]> = {
   // Nodes + device tools
   "group:nodes": ["nodes"],
   // All OpenClaw native tools (excludes provider plugins).
+  // browser, canvas, web_search, web_fetch removed in hardened build.
   "group:openclaw": [
-    "browser",
-    "canvas",
     "nodes",
     "cron",
     "message",
@@ -52,8 +51,6 @@ export const TOOL_GROUPS: Record<string, string[]> = {
     "session_status",
     "memory_search",
     "memory_get",
-    "web_search",
-    "web_fetch",
     "image",
   ],
 };

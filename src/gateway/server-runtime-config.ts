@@ -24,7 +24,7 @@ export type GatewayRuntimeConfig = {
   resolvedAuth: ResolvedGatewayAuth;
   authMode: ResolvedGatewayAuth["mode"];
   tailscaleConfig: GatewayTailscaleConfig;
-  tailscaleMode: "off" | "serve" | "funnel";
+  tailscaleMode: "off" | "serve";
   hooksConfig: ReturnType<typeof resolveHooksConfig>;
   canvasHostEnabled: boolean;
 };
@@ -41,8 +41,7 @@ export async function resolveGatewayRuntimeConfig(params: {
   tailscale?: GatewayTailscaleConfig;
 }): Promise<GatewayRuntimeConfig> {
   const bindMode = params.bind ?? params.cfg.gateway?.bind ?? "loopback";
-  const customBindHost = params.cfg.gateway?.customBindHost;
-  const bindHost = params.host ?? (await resolveGatewayBindHost(bindMode, customBindHost));
+  const bindHost = params.host ?? (await resolveGatewayBindHost(bindMode));
   const controlUiEnabled =
     params.controlUiEnabled ?? params.cfg.gateway?.controlUi?.enabled ?? true;
   const openAiChatCompletionsEnabled =
@@ -86,13 +85,8 @@ export async function resolveGatewayRuntimeConfig(params: {
     process.env.OPENCLAW_SKIP_CANVAS_HOST !== "1" && params.cfg.canvasHost?.enabled !== false;
 
   assertGatewayAuthConfigured(resolvedAuth);
-  if (tailscaleMode === "funnel" && authMode !== "password") {
-    throw new Error(
-      "tailscale funnel requires gateway auth mode=password (set gateway.auth.password or OPENCLAW_GATEWAY_PASSWORD)",
-    );
-  }
   if (tailscaleMode !== "off" && !isLoopbackHost(bindHost)) {
-    throw new Error("tailscale serve/funnel requires gateway bind=loopback (127.0.0.1)");
+    throw new Error("tailscale serve requires gateway bind=loopback (127.0.0.1)");
   }
   if (!isLoopbackHost(bindHost) && !hasSharedSecret) {
     throw new Error(

@@ -1,6 +1,6 @@
 import type { WizardPrompter } from "../../../wizard/prompts.js";
 
-export type ChannelAccessPolicy = "allowlist" | "open" | "disabled";
+export type ChannelAccessPolicy = "allowlist" | "disabled";
 
 export function parseAllowlistEntries(raw: string): string[] {
   return String(raw ?? "")
@@ -20,15 +20,11 @@ export async function promptChannelAccessPolicy(params: {
   prompter: WizardPrompter;
   label: string;
   currentPolicy?: ChannelAccessPolicy;
-  allowOpen?: boolean;
   allowDisabled?: boolean;
 }): Promise<ChannelAccessPolicy> {
   const options: Array<{ value: ChannelAccessPolicy; label: string }> = [
     { value: "allowlist", label: "Allowlist (recommended)" },
   ];
-  if (params.allowOpen !== false) {
-    options.push({ value: "open", label: "Open (allow all channels)" });
-  }
   if (params.allowDisabled !== false) {
     options.push({ value: "disabled", label: "Disabled (block all channels)" });
   }
@@ -64,7 +60,6 @@ export async function promptChannelAccessConfig(params: {
   currentPolicy?: ChannelAccessPolicy;
   currentEntries?: string[];
   placeholder?: string;
-  allowOpen?: boolean;
   allowDisabled?: boolean;
   defaultPrompt?: boolean;
   updatePrompt?: boolean;
@@ -84,7 +79,6 @@ export async function promptChannelAccessConfig(params: {
     prompter: params.prompter,
     label: params.label,
     currentPolicy: params.currentPolicy,
-    allowOpen: params.allowOpen,
     allowDisabled: params.allowDisabled,
   });
   if (policy !== "allowlist") {

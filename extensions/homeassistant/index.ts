@@ -1,6 +1,6 @@
 import type { OpenClawPluginApi } from "openclaw/plugin-sdk";
+import { Type } from "@sinclair/typebox";
 import { emptyPluginConfigSchema } from "openclaw/plugin-sdk";
-import { z } from "zod";
 
 interface HomeAssistantConfig {
   baseUrl: string;
@@ -52,33 +52,40 @@ function getConfig(api: OpenClawPluginApi): HomeAssistantConfig {
   return config;
 }
 
-const GetStatesSchema = z.object({
-  entity_id: z
-    .string()
-    .optional()
-    .describe(
-      "Optional: Specific entity ID to get state for (e.g., 'light.living_room'). If omitted, returns all states.",
-    ),
+const GetStatesSchema = Type.Object({
+  entity_id: Type.Optional(
+    Type.String({
+      description:
+        "Optional: Specific entity ID to get state for (e.g., 'light.living_room'). If omitted, returns all states.",
+    }),
+  ),
 });
 
-const CallServiceSchema = z.object({
-  domain: z.string().describe("Service domain (e.g., 'light', 'switch', 'automation', 'script')"),
-  service: z.string().describe("Service name (e.g., 'turn_on', 'turn_off', 'toggle', 'trigger')"),
-  entity_id: z
-    .string()
-    .optional()
-    .describe("Target entity ID (e.g., 'light.living_room', 'switch.coffee_maker')"),
-  service_data: z
-    .record(z.unknown())
-    .optional()
-    .describe("Optional additional service data (e.g., brightness, color)"),
+const CallServiceSchema = Type.Object({
+  domain: Type.String({
+    description: "Service domain (e.g., 'light', 'switch', 'automation', 'script')",
+  }),
+  service: Type.String({
+    description: "Service name (e.g., 'turn_on', 'turn_off', 'toggle', 'trigger')",
+  }),
+  entity_id: Type.Optional(
+    Type.String({
+      description: "Target entity ID (e.g., 'light.living_room', 'switch.coffee_maker')",
+    }),
+  ),
+  service_data: Type.Optional(
+    Type.Record(Type.String(), Type.Unknown(), {
+      description: "Optional additional service data (e.g., brightness, color)",
+    }),
+  ),
 });
 
-const ListEntitiesSchema = z.object({
-  domain: z
-    .string()
-    .optional()
-    .describe("Optional: Filter by domain (e.g., 'light', 'switch', 'sensor', 'automation')"),
+const ListEntitiesSchema = Type.Object({
+  domain: Type.Optional(
+    Type.String({
+      description: "Optional: Filter by domain (e.g., 'light', 'switch', 'sensor', 'automation')",
+    }),
+  ),
 });
 
 const plugin = {
@@ -92,7 +99,7 @@ const plugin = {
       name: "homeassistant_get_states",
       description: "Get all entity states from Home Assistant or a specific entity state",
       parameters: GetStatesSchema,
-      async execute(_toolCallId: string, params: z.infer<typeof GetStatesSchema>) {
+      async execute(_toolCallId, params) {
         const config = getConfig(api);
         const endpoint = params.entity_id ? `states/${params.entity_id}` : "states";
         const result = await callHomeAssistant(config, endpoint);
@@ -114,7 +121,7 @@ const plugin = {
       description:
         "Call a Home Assistant service (e.g., turn on/off lights, switches, trigger automations)",
       parameters: CallServiceSchema,
-      async execute(_toolCallId: string, params: z.infer<typeof CallServiceSchema>) {
+      async execute(_toolCallId, params) {
         const config = getConfig(api);
 
         const body: Record<string, unknown> = {};
@@ -144,7 +151,7 @@ const plugin = {
       name: "homeassistant_list_entities",
       description: "List all available entities in Home Assistant, optionally filtered by domain",
       parameters: ListEntitiesSchema,
-      async execute(_toolCallId: string, params: z.infer<typeof ListEntitiesSchema>) {
+      async execute(_toolCallId, params) {
         const config = getConfig(api);
         const states = (await callHomeAssistant(config, "states")) as HAState[];
 

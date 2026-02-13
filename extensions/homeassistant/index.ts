@@ -58,7 +58,7 @@ const plugin = {
   configSchema: emptyPluginConfigSchema(),
   register(api: OpenClawPluginApi) {
     // Register Home Assistant tools
-    api.registerAgentTool({
+    api.registerTool({
       name: "homeassistant_get_states",
       description: "Get all entity states from Home Assistant or a specific entity state",
       input_schema: {
@@ -83,7 +83,7 @@ const plugin = {
       },
     });
 
-    api.registerAgentTool({
+    api.registerTool({
       name: "homeassistant_call_service",
       description:
         "Call a Home Assistant service (e.g., turn on/off lights, switches, trigger automations)",
@@ -136,7 +136,7 @@ const plugin = {
       },
     });
 
-    api.registerAgentTool({
+    api.registerTool({
       name: "homeassistant_list_entities",
       description: "List all available entities in Home Assistant, optionally filtered by domain",
       input_schema: {

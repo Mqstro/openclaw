@@ -1,5 +1,6 @@
 import type { OpenClawPluginApi } from "openclaw/plugin-sdk";
 import { emptyPluginConfigSchema } from "openclaw/plugin-sdk";
+import { z } from "zod";
 
 interface HomeAssistantConfig {
   baseUrl: string;
@@ -51,70 +52,69 @@ function getConfig(api: OpenClawPluginApi): HomeAssistantConfig {
   return config;
 }
 
+const GetStatesSchema = z.object({
+  entity_id: z
+    .string()
+    .optional()
+    .describe(
+      "Optional: Specific entity ID to get state for (e.g., 'light.living_room'). If omitted, returns all states.",
+    ),
+});
+
+const CallServiceSchema = z.object({
+  domain: z.string().describe("Service domain (e.g., 'light', 'switch', 'automation', 'script')"),
+  service: z.string().describe("Service name (e.g., 'turn_on', 'turn_off', 'toggle', 'trigger')"),
+  entity_id: z
+    .string()
+    .optional()
+    .describe("Target entity ID (e.g., 'light.living_room', 'switch.coffee_maker')"),
+  service_data: z
+    .record(z.unknown())
+    .optional()
+    .describe("Optional additional service data (e.g., brightness, color)"),
+});
+
+const ListEntitiesSchema = z.object({
+  domain: z
+    .string()
+    .optional()
+    .describe("Optional: Filter by domain (e.g., 'light', 'switch', 'sensor', 'automation')"),
+});
+
 const plugin = {
   id: "homeassistant",
   name: "Home Assistant Integration",
   description: "Control Home Assistant devices and automations",
   configSchema: emptyPluginConfigSchema(),
   register(api: OpenClawPluginApi) {
-    // Register Home Assistant tools
+    // Get states tool
     api.registerTool({
       name: "homeassistant_get_states",
       description: "Get all entity states from Home Assistant or a specific entity state",
-      input_schema: {
-        type: "object" as const,
-        properties: {
-          entity_id: {
-            type: "string" as const,
-            description:
-              "Optional: Specific entity ID to get state for (e.g., 'light.living_room'). If omitted, returns all states.",
-          },
-        },
-      },
-      async handler(params: { entity_id?: string }) {
+      parameters: GetStatesSchema,
+      async execute(_toolCallId: string, params: z.infer<typeof GetStatesSchema>) {
         const config = getConfig(api);
         const endpoint = params.entity_id ? `states/${params.entity_id}` : "states";
         const result = await callHomeAssistant(config, endpoint);
 
         return {
-          success: true,
-          data: result,
+          content: [
+            {
+              type: "text" as const,
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
         };
       },
     });
 
+    // Call service tool
     api.registerTool({
       name: "homeassistant_call_service",
       description:
         "Call a Home Assistant service (e.g., turn on/off lights, switches, trigger automations)",
-      input_schema: {
-        type: "object" as const,
-        properties: {
-          domain: {
-            type: "string" as const,
-            description: "Service domain (e.g., 'light', 'switch', 'automation', 'script')",
-          },
-          service: {
-            type: "string" as const,
-            description: "Service name (e.g., 'turn_on', 'turn_off', 'toggle', 'trigger')",
-          },
-          entity_id: {
-            type: "string" as const,
-            description: "Target entity ID (e.g., 'light.living_room', 'switch.coffee_maker')",
-          },
-          service_data: {
-            type: "object" as const,
-            description: "Optional additional service data (e.g., brightness, color)",
-          },
-        },
-        required: ["domain", "service"],
-      },
-      async handler(params: {
-        domain: string;
-        service: string;
-        entity_id?: string;
-        service_data?: Record<string, unknown>;
-      }) {
+      parameters: CallServiceSchema,
+      async execute(_toolCallId: string, params: z.infer<typeof CallServiceSchema>) {
         const config = getConfig(api);
 
         const body: Record<string, unknown> = {};
@@ -129,27 +129,22 @@ const plugin = {
         const result = await callHomeAssistant(config, endpoint, "POST", body);
 
         return {
-          success: true,
-          message: `Called ${params.domain}.${params.service}${params.entity_id ? ` on ${params.entity_id}` : ""}`,
-          data: result,
+          content: [
+            {
+              type: "text" as const,
+              text: `✅ Called ${params.domain}.${params.service}${params.entity_id ? ` on ${params.entity_id}` : ""}\n\nResult: ${JSON.stringify(result, null, 2)}`,
+            },
+          ],
         };
       },
     });
 
+    // List entities tool
     api.registerTool({
       name: "homeassistant_list_entities",
       description: "List all available entities in Home Assistant, optionally filtered by domain",
-      input_schema: {
-        type: "object" as const,
-        properties: {
-          domain: {
-            type: "string" as const,
-            description:
-              "Optional: Filter by domain (e.g., 'light', 'switch', 'sensor', 'automation')",
-          },
-        },
-      },
-      async handler(params: { domain?: string }) {
+      parameters: ListEntitiesSchema,
+      async execute(_toolCallId: string, params: z.infer<typeof ListEntitiesSchema>) {
         const config = getConfig(api);
         const states = (await callHomeAssistant(config, "states")) as HAState[];
 
@@ -165,9 +160,12 @@ const plugin = {
         }));
 
         return {
-          success: true,
-          count: entities.length,
-          entities,
+          content: [
+            {
+              type: "text" as const,
+              text: `Found ${entities.length} entities${params.domain ? ` in domain '${params.domain}'` : ""}:\n\n${JSON.stringify(entities, null, 2)}`,
+            },
+          ],
         };
       },
     });

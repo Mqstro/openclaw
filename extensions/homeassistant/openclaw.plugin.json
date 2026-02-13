@@ -1,0 +1,20 @@
+{
+  "id": "homeassistant",
+  "name": "Home Assistant Integration",
+  "description": "Control Home Assistant devices and automations",
+  "version": "1.0.0",
+  "configSchema": {
+    "type": "object",
+    "properties": {
+      "baseUrl": {
+        "type": "string",
+        "description": "Home Assistant base URL (e.g., http://localhost:8123)"
+      },
+      "accessToken": {
+        "type": "string",
+        "description": "Long-Lived Access Token"
+      }
+    },
+    "required": ["baseUrl", "accessToken"]
+  }
+}
